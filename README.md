@@ -27,10 +27,15 @@ npm run check          # lint + tests + production build
 npm run build:demo     # static demo build → dist/clm-shipments-angular/browser
 ```
 
-## Publish the demo (e.g. GitHub Pages)
+## Publish the demo (GitHub Pages)
 
-`npm run build:demo` builds with relative paths and hash URLs, so it works from any folder.
-Copy everything in `dist/clm-shipments-angular/browser/` to the web root, for example the `clm-shipments-demo` repository, and push.
+GitHub Pages can't run the source code; it needs the built app. The workflow in `.github/workflows/deploy-pages.yml` builds it on every push to `main`.
+
+**One-time setup:** in the repo, go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
+
+After that, every push runs lint, tests and the build, then publishes the app. You can follow it in the **Actions** tab.
+
+To host it anywhere else, run `npm run build:demo` and copy `dist/clm-shipments-angular/browser/` to the web root.
 
 ## Tech
 
