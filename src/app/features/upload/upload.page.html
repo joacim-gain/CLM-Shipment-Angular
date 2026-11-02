@@ -1,0 +1,360 @@
+<div class="clm-page">
+  <div class="clm-sticky-head">
+    <div class="clm-page-head">
+      <button mat-icon-button class="clm-back" matTooltip="Back" aria-label="Back" (click)="back()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="clm-grow">
+        <h1>Upload working packages</h1>
+        <div class="meta">
+          <span>Create many working packages at once from an Excel sheet.</span>
+        </div>
+      </div>
+      <button mat-stroked-button (click)="downloadSample()">
+        <mat-icon>download</mat-icon>Download sample file
+      </button>
+    </div>
+  </div>
+
+  <input #fileInput type="file" accept=".xlsx,.xls,.csv" hidden (change)="onPick(fileInput)" />
+
+  <div class="card">
+    <div class="u-steps">
+      @for (l of stepLabels; track l; let i = $index) {
+        @if (i) {
+          <span class="u-line" [class.done]="i <= stepIndex()"></span>
+        }
+        <span class="u-step" [class]="stepState(i)">
+          <span class="bub">
+            @if (stepState(i) === 'done') {
+              <mat-icon>check</mat-icon>
+            } @else {
+              {{ i + 1 }}
+            }</span
+          >{{ l }}
+        </span>
+      }
+    </div>
+
+    @switch (stage()) {
+      @case ('select') {
+        @if (error(); as e) {
+          <div class="clm-banner err">
+            <mat-icon>error</mat-icon>
+            <div>
+              <b>{{ e.title }}</b>
+              <p>{{ e.text }}</p>
+            </div>
+          </div>
+        }
+        <div
+          class="drop-row"
+          [class.over]="dragOver()"
+          role="button"
+          tabindex="0"
+          (click)="fileInput.click()"
+          (keydown.enter)="fileInput.click()"
+          (dragover)="$event.preventDefault(); dragOver.set(true)"
+          (dragleave)="dragOver.set(false)"
+          (drop)="onDrop($event)"
+        >
+          <span class="xls lg">X</span>
+          <div class="clm-grow">
+            <b class="strong">Drag and drop a file here or browse</b>
+            <div class="clm-cap">
+              Only .xlsx, .xls or .csv · up to 10 MB · one working package per row
+            </div>
+          </div>
+          <button mat-flat-button (click)="$event.stopPropagation(); fileInput.click()">
+            <mat-icon>upload</mat-icon>Upload file
+          </button>
+        </div>
+        <div class="clm-row clm-cap hint-row">
+          <mat-icon>info</mat-icon>
+          <span
+            >Required columns: Title, Sender, Recipient, Building, Floor, Date from, Date to.
+            Optional: Trade, Zone, Volume.</span
+          >
+          <button class="clm-link" (click)="downloadSample()">
+            <mat-icon>download</mat-icon>Download sample file
+          </button>
+        </div>
+      }
+      @case ('review') {
+        <div class="clm-row file-row">
+          <span class="xls lg">X</span>
+          <div class="clm-grow">
+            <b class="strong">{{ file()?.name }}</b>
+            <div class="clm-cap">
+              {{ rows().length }} rows found · <span class="clm-ok-t">{{ ok() }} ready</span>
+              @if (bad()) {
+                ·
+                <span class="clm-err-t">{{ bad() }} need{{ bad() > 1 ? '' : 's' }} attention</span>
+              }
+            </div>
+          </div>
+          <button mat-button (click)="reset()">
+            <mat-icon>swap_horiz</mat-icon>Choose another file
+          </button>
+        </div>
+        @if (bad()) {
+          <div class="clm-banner">
+            <mat-icon>edit_note</mat-icon>
+            <div>
+              <b>Fix the highlighted cells right here</b>
+              <p>
+                Rows turn green as soon as they are valid. Or skip them and import only the ready
+                rows.
+              </p>
+            </div>
+          </div>
+        } @else {
+          <div class="clm-banner ok">
+            <mat-icon>check_circle</mat-icon>
+            <div>
+              <b>All rows are valid</b>
+              <p>Ready to import {{ ok() }} working packages.</p>
+            </div>
+          </div>
+        }
+        <div class="clm-tbl-wrap review">
+          <table class="clm-table">
+            <thead>
+              <tr>
+                <th class="num">#</th>
+                @for (c of columns; track c.key) {
+                  <th>{{ c.label }}</th>
+                }
+                <th>Check</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (x of checked(); track $index; let i = $index) {
+                <tr>
+                  <td class="clm-faint">{{ i + 2 }}</td>
+                  @for (c of columns; track c.key) {
+                    @if (cellError(x.errors, c.key)) {
+                      <td class="cell-err">
+                        <input
+                          #cell
+                          class="cell-in"
+                          [class.ok]="cellValid(i, c.key, cell.value)"
+                          [value]="x.r[c.key] ?? ''"
+                          (input)="(0)"
+                          [placeholder]="
+                            c.key === 'from' || c.key === 'to' ? 'YYYY-MM-DD' : 'Required'
+                          "
+                          [attr.list]="
+                            c.key === 'building'
+                              ? 'dl-b'
+                              : c.key === 'floor'
+                                ? 'dl-f'
+                                : c.key === 'trade'
+                                  ? 'dl-t'
+                                  : null
+                          "
+                          (change)="commitCell(i, c.key, cell.value)"
+                          (keydown.enter)="cell.blur()"
+                          [attr.aria-label]="c.label + ', row ' + (i + 2)"
+                        />
+                      </td>
+                    } @else {
+                      <td class="clm-nowrap">
+                        {{
+                          c.key === 'from' || c.key === 'to'
+                            ? x.r[c.key]
+                              ? fmtDate(x.r[c.key])
+                              : ''
+                            : x.r[c.key]
+                        }}
+                      </td>
+                    }
+                  }
+                  <td class="clm-nowrap">
+                    @if (x.errors.length) {
+                      <span
+                        class="clm-pill error"
+                        [matTooltip]="errorText(x.errors)"
+                        matTooltipClass="clm-tip-multiline"
+                        >{{ x.errors.length }} error{{ x.errors.length > 1 ? 's' : '' }}</span
+                      >
+                    } @else {
+                      <span class="clm-pill success">Ready</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <datalist id="dl-b">
+          @for (b of lists.BUILDINGS; track b) {
+            <option [value]="b"></option>
+          }
+        </datalist>
+        <datalist id="dl-f">
+          @for (f of lists.FLOORS; track f) {
+            <option [value]="f"></option>
+          }
+        </datalist>
+        <datalist id="dl-t">
+          @for (t of lists.TRADES; track t) {
+            <option [value]="t"></option>
+          }
+        </datalist>
+        <div class="clm-row actions">
+          @if (bad()) {
+            <mat-checkbox [checked]="skip()" (change)="skip.set($event.checked)"
+              >Skip {{ bad() }} row{{ bad() > 1 ? 's' : '' }} with errors</mat-checkbox
+            >
+          }
+          <span class="clm-sp"></span>
+          <button mat-button (click)="reset()">Cancel</button>
+          <button mat-flat-button [disabled]="!importCount()" (click)="doImport()">
+            <mat-icon>file_download_done</mat-icon>Import {{ importCount() }} working package{{
+              importCount() !== 1 ? 's' : ''
+            }}
+          </button>
+        </div>
+      }
+      @case ('done') {
+        <div class="clm-banner ok">
+          <mat-icon>task_alt</mat-icon>
+          <div>
+            <b
+              >{{ result().length }} working package{{
+                result().length !== 1 ? 's' : ''
+              }}
+              imported</b
+            >
+            <p>
+              {{
+                skipped()
+                  ? skipped() + (skipped() > 1 ? ' rows were' : ' row was') + ' skipped. '
+                  : ''
+              }}You can add shipments to them right away.
+            </p>
+          </div>
+        </div>
+        <div class="clm-tbl-wrap">
+          <table class="clm-table">
+            <thead>
+              <tr>
+                <th>Working package</th>
+                <th>Location</th>
+                <th>Booking window</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (w of result(); track w.id) {
+                <tr class="click" (click)="openWp(w)">
+                  <td>
+                    <div class="clm-row">
+                      <span class="clm-dot" [style.background]="tradeColor(w.trade)"></span
+                      ><span class="clm-tline1">{{ w.title }}</span>
+                    </div>
+                    <div class="clm-tline2">{{ w.trade }} · {{ w.sender }} → {{ w.recipient }}</div>
+                  </td>
+                  <td>{{ w.building }} · {{ w.floor }}</td>
+                  <td>{{ w.from | clmDate }} – {{ w.to | clmDate }}</td>
+                  <td class="right">
+                    <button mat-button class="clm-btn-sm" (click)="addShipment($event, w)">
+                      <mat-icon>add</mat-icon>Add shipment
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="clm-row actions">
+          <span class="clm-sp"></span>
+          <button mat-stroked-button (click)="reset()">
+            <mat-icon>upload_file</mat-icon>Upload another file
+          </button>
+          <button mat-flat-button (click)="viewInShipments()">
+            <mat-icon>local_shipping</mat-icon>View in Shipments
+          </button>
+        </div>
+      }
+      @default {
+        <div class="clm-row progress-row">
+          <span class="xls lg">X</span>
+          <div class="clm-grow">
+            <b class="strong">{{ file()?.name }}</b>
+            <div class="clm-cap">{{ progressText() }}</div>
+            <div class="prog-big"><i [style.width.%]="progress()"></i></div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  @if (stage() === 'select') {
+    <div class="card">
+      <div class="clm-card-head">
+        <div class="grow">
+          <div class="card-h">Upload history ({{ uploads().length }})</div>
+        </div>
+      </div>
+      <div class="clm-tbl-wrap">
+        <table class="clm-table">
+          <thead>
+            <tr>
+              <th>File name</th>
+              <th>Uploaded by</th>
+              <th>Uploaded on</th>
+              <th>Rows</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of pageItems(); track u.id) {
+              <tr class="click" (click)="openUpload(u, fileInput)">
+                <td>
+                  <div class="clm-row file">
+                    <span class="xls">X</span><span class="file-link">{{ u.name }}</span>
+                  </div>
+                </td>
+                <td>{{ u.by }}</td>
+                <td>{{ u.on | clmDate }}</td>
+                <td>{{ u.rows || '—' }}</td>
+                <td>
+                  <span class="clm-pill" [class]="pill(u.status)"
+                    >{{ u.status
+                    }}{{
+                      u.status === 'Failed' ? ' · ' + (u.errors?.length ?? 0) + ' errors' : ''
+                    }}</span
+                  >
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span>Items per page {{ perPage }}</span
+        ><span>{{ pageLabel() }}</span>
+        <button
+          mat-icon-button
+          class="clm-icon-btn-sm"
+          [disabled]="page() <= 1"
+          aria-label="Previous page"
+          (click)="page.set(page() - 1)"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          class="clm-icon-btn-sm"
+          [disabled]="page() >= pages()"
+          aria-label="Next page"
+          (click)="page.set(page() + 1)"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+  }
+</div>

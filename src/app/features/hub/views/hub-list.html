@@ -1,0 +1,179 @@
+@let p = prefs();
+<div class="glist">
+  <div class="glist-head" [style.grid-template-columns]="cols()">
+    <span></span><span>{{ groupLabel() }}</span>
+    @if (showLocation()) {
+      <span>Location</span>
+    }
+    <span>{{ p.groupBy === 'wp' ? 'Booking window' : 'Shipment dates' }}</span>
+    @if (showParties()) {
+      <span>{{ partiesLabel() }}</span>
+    }
+    <span>Shipments</span><span>Status</span>
+  </div>
+
+  @for (r of rows(); track r.key) {
+    <div
+      class="grow-row"
+      [class.open]="r.expanded"
+      [style.grid-template-columns]="cols()"
+      role="button"
+      tabindex="0"
+      (click)="openGroup.emit(r.g.key)"
+      (keydown.enter)="openGroup.emit(r.g.key)"
+    >
+      @if (r.g.wp) {
+        <i class="trade-bar" [style.background]="tradeColor(r.g.trade)"></i>
+      }
+      <button
+        class="caret"
+        [class.open]="r.expanded"
+        [matTooltip]="(r.expanded ? 'Hide' : 'Show') + ' shipments'"
+        [attr.aria-expanded]="r.expanded"
+        [attr.aria-label]="(r.expanded ? 'Hide' : 'Show') + ' shipments of ' + r.g.title"
+        (click)="toggle($event, r.key)"
+        (keydown.enter)="$event.stopPropagation()"
+      >
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+      <div class="min0">
+        <div class="g-title">
+          <span class="t" [innerHTML]="r.g.title | clmHighlight: p.search"></span
+          ><mat-icon class="go">arrow_forward</mat-icon>
+        </div>
+        <div class="g-sub">{{ r.g.sub }}</div>
+      </div>
+      @if (showLocation()) {
+        <div class="min0">
+          <div>{{ location(r) }}</div>
+          <div class="g-sub">{{ r.g.wp?.zone }}</div>
+        </div>
+      }
+      <div>
+        <div class="clm-nowrap">
+          {{ r.g.from ? (r.g.from | clmDate: 'short') + ' – ' + (r.g.to | clmDate: 'short') : '—' }}
+        </div>
+        <div class="g-sub" [class.clm-err-t]="r.note.error">{{ r.note.text }}</div>
+      </div>
+      @if (showParties()) {
+        <div class="min0">
+          <div
+            class="clm-ell"
+            [innerHTML]="(p.columns.sender ? r.sender : r.recipient) | clmHighlight: p.search"
+          ></div>
+          @if (p.columns.sender && p.columns.recipient) {
+            <div class="g-sub clm-ell">
+              → <span [innerHTML]="r.recipient | clmHighlight: p.search"></span>
+            </div>
+          }
+        </div>
+      }
+      <div>
+        <div
+          class="clm-progress"
+          [matTooltip]="
+            r.done +
+            ' completed · ' +
+            (r.total - r.done - r.open) +
+            ' approved / in progress · ' +
+            r.open +
+            ' open'
+          "
+        >
+          <i [style.width.%]="r.pct"></i><i class="b" [style.width.%]="r.appr"></i>
+        </div>
+        <div class="g-sub">
+          {{ r.done }} of {{ r.total }} done{{
+            r.open ? ' · ' + r.open + ' open' : r.total && r.done === r.total ? ' · all done' : ''
+          }}
+        </div>
+      </div>
+      <div>
+        @if (r.g.status; as st) {
+          <span class="clm-row wp-st"
+            ><clm-wp-icon [status]="st" /><clm-wp-pill [status]="st"
+          /></span>
+        } @else {
+          <span class="clm-cap">{{ r.wpCount }} WP</span>
+        }
+      </div>
+    </div>
+
+    @if (r.expanded) {
+      <div class="ships">
+        @if (!r.total) {
+          <div class="show-all clm-cap">
+            No shipments yet ·
+            <button class="clm-link" (click)="addShipment.emit(r.g.wp?.id)">
+              <mat-icon>add</mat-icon>Add shipment
+            </button>
+          </div>
+        } @else {
+          @for (s of r.shown; track s.id) {
+            <div
+              class="srow"
+              [style.grid-template-columns]="cols()"
+              role="button"
+              tabindex="0"
+              (click)="openShipment.emit(s.id)"
+              (keydown.enter)="openShipment.emit(s.id)"
+            >
+              <span></span>
+              <div class="s-name">
+                <clm-ship-icon [status]="s.status" />
+                <div class="min0">
+                  <div class="clm-ell strong" [innerHTML]="s.name | clmHighlight: p.search"></div>
+                  <div class="g-sub" [innerHTML]="s.no | clmHighlight: p.search"></div>
+                </div>
+              </div>
+              @if (showLocation()) {
+                <div class="min0">
+                  <div class="clm-ell">{{ s.up }}</div>
+                  <div class="g-sub clm-ell">{{ s.building }} · {{ s.floor }}</div>
+                </div>
+              }
+              <div>
+                <div class="clm-nowrap">{{ s.date | clmDate: 'day' }}</div>
+                <div class="g-sub">{{ s.start }} – {{ s.end }}</div>
+              </div>
+              @if (showParties()) {
+                <div class="min0">
+                  <div class="clm-ell">{{ vehicleName(s.vehicle) }}</div>
+                  <div class="g-sub clm-ell">
+                    {{ s.vehicles || 1 }} vehicle{{ (s.vehicles || 1) > 1 ? 's' : '' }}
+                  </div>
+                </div>
+              }
+              <div class="min0">
+                <div class="clm-ell">{{ equipmentNames(s.equipment) }}</div>
+                <div class="g-sub">Equipment</div>
+              </div>
+              <div><clm-status-pill [status]="s.status" /></div>
+            </div>
+          }
+          <div class="show-all">
+            @if (r.total > max) {
+              <button class="clm-link" (click)="toggleShowAll.emit(r.key)">
+                <mat-icon>{{ r.all ? 'expand_less' : 'expand_more' }}</mat-icon
+                >{{ r.all ? 'Show less' : 'Show all ' + r.total + ' shipments' }}
+              </button>
+              <span class="clm-faint">·</span>
+            }
+            <button class="clm-link" (click)="openGroup.emit(r.g.key)">
+              <mat-icon>open_in_new</mat-icon>Open
+              {{ p.groupBy === 'wp' ? 'working package' : 'group' }}
+            </button>
+            @if (r.canAdd) {
+              <span class="clm-faint">·</span>
+              <button class="clm-link" (click)="addShipment.emit(r.g.wp?.id)">
+                <mat-icon>add</mat-icon>Add shipment
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  } @empty {
+    <clm-hub-empty (clearFilters)="resetFilters.emit()" />
+  }
+</div>

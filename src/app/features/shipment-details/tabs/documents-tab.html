@@ -1,0 +1,111 @@
+@let s = shipment();
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Documents ({{ s.docs.length }})</mat-card-title>
+      <mat-card-subtitle
+        >Delivery notes, permits or plans · PDF, DOCX, PPTX, XLSX up to 20 MB</mat-card-subtitle
+      >
+    </div>
+  </div>
+
+  <!-- Custom: Angular Material has no file drop zone -->
+  <button
+    type="button"
+    class="drop"
+    [class.over]="dragOver()"
+    (click)="docInput.click()"
+    (dragover)="$event.preventDefault(); dragOver.set(true)"
+    (dragleave)="dragOver.set(false)"
+    (drop)="onDrop($event)"
+  >
+    <mat-icon>upload</mat-icon>
+    <span>Drag files here or <span class="link">browse</span></span>
+  </button>
+  <input
+    #docInput
+    type="file"
+    multiple
+    [accept]="docTypes"
+    hidden
+    (change)="onPick(docInput, 'docs')"
+  />
+
+  <div class="doc-list">
+    @for (d of s.docs; track $index; let i = $index) {
+      <div class="clm-row-box">
+        <span class="dic"><mat-icon>description</mat-icon></span>
+        <div class="grow">
+          <b>{{ d.name }}</b>
+          <div class="clm-cap">
+            {{ d.type }} · {{ d.size }} · {{ data.person(d.by).name }}, {{ d.at | clmDate: 'time' }}
+          </div>
+        </div>
+        <button
+          mat-icon-button
+          class="clm-icon-btn-sm"
+          matTooltip="Download"
+          [attr.aria-label]="'Download ' + d.name"
+          (click)="download(d.name)"
+        >
+          <mat-icon>download</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          class="clm-icon-btn-sm"
+          matTooltip="Delete"
+          [attr.aria-label]="'Delete ' + d.name"
+          (click)="deleteDoc(i)"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    } @empty {
+      <div class="clm-cap">No documents uploaded yet.</div>
+    }
+  </div>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Photos ({{ s.photos.length }})</mat-card-title>
+      <mat-card-subtitle>Helps the site team identify the load</mat-card-subtitle>
+    </div>
+  </div>
+  <div class="photos">
+    @for (p of s.photos; track $index; let i = $index) {
+      <div class="photo">
+        <button
+          type="button"
+          class="open"
+          (click)="openPhoto(i)"
+          [attr.aria-label]="'Open photo ' + (i + 1)"
+        >
+          <img [src]="p" alt="" />
+        </button>
+        <button
+          type="button"
+          class="rm"
+          matTooltip="Remove"
+          aria-label="Remove photo"
+          (click)="removePhoto(i)"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    }
+    <button type="button" class="add-tile" (click)="photoInput.click()">
+      <mat-icon>add_a_photo</mat-icon>Add photo
+    </button>
+    <input
+      #photoInput
+      type="file"
+      multiple
+      accept="image/*"
+      hidden
+      (change)="onPick(photoInput, 'photos')"
+    />
+  </div>
+</mat-card>

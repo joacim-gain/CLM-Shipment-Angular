@@ -1,0 +1,171 @@
+@let dr = d();
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Destination</mat-card-title>
+      <mat-card-subtitle
+        >Where should the delivery go on site?{{
+          dr.wpId ? ' Prefilled from the working package.' : ''
+        }}</mat-card-subtitle
+      >
+    </div>
+  </div>
+  <div class="clm-grid2">
+    @for (f of destination; track f.key) {
+      <div class="clm-field">
+        <span class="clm-label" [id]="'f-' + f.key">{{ f.label }} *</span>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select
+            [ngModel]="dr[f.key]"
+            placeholder="Select"
+            (ngModelChange)="setField(f.key, $event)"
+            [attr.aria-labelledby]="'f-' + f.key"
+            [errorStateMatcher]="ctx.matcher(f.key)"
+          >
+            @for (o of f.options; track o) {
+              <mat-option [value]="o">{{ o }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>{{ ctx.err(f.key) }}</mat-error>
+        </mat-form-field>
+      </div>
+    }
+  </div>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card" [class.has-error]="!!ctx.err('materials')">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Materials</mat-card-title>
+      <mat-card-subtitle
+        >Which material do you want to deliver? Pick one or more and set the
+        quantity.</mat-card-subtitle
+      >
+    </div>
+  </div>
+  <div class="clm-row">
+    <div class="clm-chips filters" role="group" aria-label="Filter materials">
+      @for (f of filters; track f) {
+        <button
+          class="fchip"
+          [class.on]="filter() === f"
+          [attr.aria-pressed]="filter() === f"
+          (click)="filter.set(f)"
+        >
+          {{ f }}
+        </button>
+      }
+    </div>
+    <span class="clm-sp"></span>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="clm-search mat-search">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        placeholder="Search material"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+        aria-label="Search material"
+      />
+    </mat-form-field>
+  </div>
+  <div class="clm-sel-grid mats">
+    <button class="clm-stile add" (click)="newMaterial()">
+      <mat-icon>add</mat-icon><b>Add new</b>
+    </button>
+    @for (m of shown(); track m.id) {
+      @let sel = selectedOf(m.id);
+      <button
+        class="clm-stile"
+        [class.on]="!!sel"
+        [attr.aria-pressed]="!!sel"
+        (click)="openMaterial(m)"
+      >
+        @if (sel) {
+          <span class="clm-stile-check"><mat-icon>check</mat-icon></span>
+        }
+        <b>{{ m.name }}</b
+        ><small>Unit: {{ m.unit }}</small>
+        @if (sel) {
+          <span class="clm-pill olive">{{ sel.qty }} {{ sel.unit }}</span>
+        }
+      </button>
+    }
+  </div>
+  @if (collapsible()) {
+    <button
+      class="clm-link more"
+      (click)="ctx.set({ showAllMaterials: !dr.showAllMaterials }, undefined)"
+    >
+      <mat-icon>{{ dr.showAllMaterials ? 'expand_less' : 'expand_more' }}</mat-icon
+      >{{ dr.showAllMaterials ? 'Show fewer' : 'See all materials (' + list().length + ')' }}
+    </button>
+  }
+  @if (!list().length) {
+    <div class="clm-cap">
+      No material found.
+      <button class="clm-link" (click)="newMaterial()">Add “{{ query() }}”</button>
+    </div>
+  }
+  <div class="sel-list">
+    <div class="clm-overline">Selected ({{ dr.materials.length }})</div>
+    @for (x of selected(); track x.m.id) {
+      <div class="sl-item">
+        <div>
+          <b class="strong">{{ x.ref.name }}</b>
+          <div class="clm-cap">{{ selectedDetail(x.m, x.ref.pack) }}</div>
+        </div>
+        <div class="clm-field">
+          <label [for]="'qty-' + x.i">Quantity *</label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic"
+            ><input
+              matInput
+              [id]="'qty-' + x.i"
+              type="number"
+              min="1"
+              [value]="x.m.qty"
+              (change)="setQty(x.i, $any($event.target).value)"
+          /></mat-form-field>
+        </div>
+        <div class="clm-field">
+          <span class="clm-label">Unit</span>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="clm-readonly"
+            ><input
+              matInput
+              [value]="x.m.unit"
+              readonly
+              [attr.aria-label]="'Unit of ' + x.ref.name"
+          /></mat-form-field>
+        </div>
+        <div class="clm-row tight">
+          <button mat-button (click)="openMaterial(x.ref)"><mat-icon>edit</mat-icon>Details</button>
+          <button mat-button (click)="remove(x.i)"><mat-icon>delete</mat-icon>Remove</button>
+        </div>
+      </div>
+    } @empty {
+      <div class="clm-cap empty-sel">Nothing selected yet — click a material above.</div>
+    }
+  </div>
+  @if (ctx.err('materials'); as e) {
+    <div class="clm-card-error">{{ e }}</div>
+  }
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow"><mat-card-title>Comment</mat-card-title></div>
+  </div>
+  <div class="clm-field">
+    <label for="f-comment">Note for the site team (optional)</label>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <textarea
+        matInput
+        id="f-comment"
+        maxlength="250"
+        placeholder="e.g. Please unload at the north side of Bau 06."
+        [value]="dr.comment"
+        (input)="ctx.set({ comment: $any($event.target).value })"
+      ></textarea>
+    </mat-form-field>
+    <div class="clm-counter">{{ dr.comment.length }}/250</div>
+  </div>
+</mat-card>

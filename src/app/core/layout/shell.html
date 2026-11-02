@@ -1,0 +1,204 @@
+<div class="app" [class.nav-collapsed]="collapsed()">
+  <aside class="sidenav">
+    <div class="sn-head">
+      <div class="sn-logo"><img src="fig/clm-logo.svg" alt="CLM" /></div>
+      <button
+        class="sn-burger"
+        (click)="toggleNav()"
+        [matTooltip]="collapsed() ? 'Expand menu' : 'Collapse menu'"
+        matTooltipPosition="right"
+        [attr.aria-label]="collapsed() ? 'Expand menu' : 'Collapse menu'"
+      >
+        <img src="fig/menu.svg" alt="" />
+      </button>
+    </div>
+    <nav class="sn-items" aria-label="Main">
+      @for (n of nav; track n.key) {
+        <a
+          class="sn-item"
+          [routerLink]="n.link"
+          [class.active]="activeNav() === n.key"
+          [matTooltip]="n.label"
+          matTooltipPosition="right"
+          [matTooltipDisabled]="!collapsed()"
+        >
+          <span class="nav-ic"><img [src]="'fig/' + n.icon + '.svg'" alt="" /></span
+          ><span class="lbl">{{ n.label }}</span>
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="tb-site">
+        <label for="site-btn">Site:</label>
+        <button
+          id="site-btn"
+          class="site-select"
+          [matMenuTriggerFor]="siteMenu"
+          (menuOpened)="siteQuery.set('')"
+        >
+          <span
+            ><b>{{ site }}</b
+            ><small>{{ siteProject }}</small></span
+          >
+          <img src="fig/arrow-down.svg" alt="" />
+        </button>
+        <!-- Site switcher — CLM Figma 26049:55842 -->
+        <mat-menu #siteMenu="matMenu" class="clm-site-menu">
+          <div
+            class="ss-search"
+            role="presentation"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <mat-icon>search</mat-icon>
+            <input
+              [ngModel]="siteQuery()"
+              (ngModelChange)="siteQuery.set($event)"
+              placeholder="Search sites"
+              autocomplete="off"
+              aria-label="Search sites"
+            />
+          </div>
+          @for (s of sites(); track s.name) {
+            <button
+              mat-menu-item
+              class="ss-item"
+              [class.on]="s.name === site"
+              (click)="pickSite(s.name)"
+            >
+              <span class="ss-t"
+                ><b>{{ s.name }}</b
+                ><small>{{ s.project }}</small></span
+              >
+              @if (s.name === site) {
+                <mat-icon class="ss-check">check</mat-icon>
+              }
+            </button>
+          } @empty {
+            <div class="clm-cap ss-none">No site found</div>
+          }
+        </mat-menu>
+      </div>
+
+      <div class="tb-right">
+        <div class="tb-tz" matTooltip="All times are shown in the site time zone">
+          <span
+            ><span class="tz-l">Site time zone</span><span class="tz-v">Europe/Zurich</span></span
+          >
+          <img src="fig/public.svg" alt="" width="24" height="24" />
+        </div>
+        <button class="tb-lang" [matMenuTriggerFor]="langMenu" aria-label="Language">
+          EN<img src="fig/arrow-down-olive.svg" alt="" width="20" height="20" />
+        </button>
+        <mat-menu #langMenu="matMenu" xPosition="before">
+          @for (c of languages; track c) {
+            <button mat-menu-item [class.clm-on]="c === 'EN'" (click)="pickLanguage(c)">
+              <span class="flag">
+                @switch (c) {
+                  @case ('EN') {
+                    <svg viewBox="0 0 60 30" width="24" height="12" aria-hidden="true">
+                      <clipPath id="fgb"><path d="M0 0v30h60V0z" /></clipPath>
+                      <clipPath id="fgt"><path d="M30 15h30v15zv15H0zH0V0zV0h30z" /></clipPath>
+                      <g clip-path="url(#fgb)">
+                        <path d="M0 0v30h60V0z" fill="#012169" />
+                        <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6" />
+                        <path
+                          d="M0 0l60 30m0-30L0 30"
+                          clip-path="url(#fgt)"
+                          stroke="#C8102E"
+                          stroke-width="4"
+                        />
+                        <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10" />
+                        <path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6" />
+                      </g>
+                    </svg>
+                  }
+                  @case ('DE') {
+                    <svg viewBox="0 0 5 3" width="20" height="12" aria-hidden="true">
+                      <path fill="#000" d="M0 0h5v1H0z" />
+                      <path fill="#D00" d="M0 1h5v1H0z" />
+                      <path fill="#FFCE00" d="M0 2h5v1H0z" />
+                    </svg>
+                  }
+                  @case ('FR') {
+                    <svg viewBox="0 0 3 2" width="18" height="12" aria-hidden="true">
+                      <path fill="#002395" d="M0 0h1v2H0z" />
+                      <path fill="#fff" d="M1 0h1v2H1z" />
+                      <path fill="#ED2939" d="M2 0h1v2H2z" />
+                    </svg>
+                  }
+                }
+              </span>
+              <span>{{ c }}</span>
+              @if (c === 'EN') {
+                <mat-icon class="clm-menu-check">check</mat-icon>
+              }
+            </button>
+          }
+        </mat-menu>
+
+        <button
+          class="tb-icon"
+          [matMenuTriggerFor]="bellMenu"
+          matTooltip="Notifications"
+          aria-label="Notifications"
+        >
+          <img src="fig/bell.svg" alt="" width="24" height="24" />
+          @if (unread()) {
+            <i class="dot"></i>
+          }
+        </button>
+        <mat-menu #bellMenu="matMenu" xPosition="before" class="clm-notif-menu">
+          <div
+            class="nt-head"
+            role="presentation"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <b>Notifications</b>
+            <button mat-button class="clm-btn-sm" (click)="unread.set(false)">
+              Mark all as read
+            </button>
+          </div>
+          @for (n of notifications(); track n.at) {
+            <a mat-menu-item class="nt-item" [routerLink]="n.link">
+              <mat-icon [style.color]="notificationTone(n.tone)">{{ n.icon }}</mat-icon>
+              <span class="nt-t"
+                ><span [innerHTML]="n.html"></span
+                ><span class="clm-cap">{{ n.at | clmDate: 'time' }}</span></span
+              >
+            </a>
+          }
+        </mat-menu>
+
+        <button
+          class="tb-avatar"
+          [matMenuTriggerFor]="userMenu"
+          matTooltip="Max Mustermann"
+          aria-label="Account"
+        >
+          <img src="fig/avatar-face.png" alt="" />
+        </button>
+        <mat-menu #userMenu="matMenu" xPosition="before" class="clm-menu-wide">
+          <div class="clm-menu-header">Max Mustermann · Team pRED</div>
+          <button mat-menu-item (click)="profile()"><mat-icon>person</mat-icon>My profile</button>
+          <mat-divider />
+          <button mat-menu-item (click)="resetDemo()">
+            <mat-icon>restart_alt</mat-icon>Reset demo data
+          </button>
+        </mat-menu>
+
+        <div class="tb-client">
+          <div class="crop"><img src="fig/zurich.png" alt="Zürich Airport" /></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content" #content>
+      <router-outlet />
+    </main>
+  </div>
+</div>

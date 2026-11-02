@@ -1,0 +1,95 @@
+@if (d(); as dr) {
+  <div class="clm-page">
+    <div class="clm-sticky-head" #head>
+      <div class="flow-head">
+        <button
+          mat-icon-button
+          class="clm-back"
+          matTooltip="Leave"
+          aria-label="Leave"
+          (click)="leave()"
+        >
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h1>{{ edit() ? 'Edit Shipment' : 'Create Shipment' }}</h1>
+      </div>
+      <div class="stepper-bar">
+        <button mat-stroked-button [disabled]="dr.step === 1" (click)="go(dr.step - 1)">
+          <mat-icon>arrow_back</mat-icon>Back
+        </button>
+        <nav class="stepper" aria-label="Steps">
+          @for (s of stepStates(); track s.n) {
+            @if (s.n > 1) {
+              <span class="step-line" [class.done]="s.lineDone"></span>
+            }
+            <button
+              class="step"
+              [class]="s.state"
+              [attr.aria-current]="s.state === 'cur' ? 'step' : null"
+              [matTooltip]="s.state === 'locked' ? 'Complete the previous steps first' : ''"
+              (click)="clickStep(s.n)"
+            >
+              <span class="bub">
+                @if (s.state === 'done') {
+                  <mat-icon>check</mat-icon>
+                } @else {
+                  {{ s.n }}
+                }
+              </span>
+              <span class="lab">{{ s.label }}</span>
+            </button>
+          }
+        </nav>
+        @if (edit() && dr.step !== 6) {
+          <button mat-stroked-button (click)="save()"><mat-icon>save</mat-icon>Save changes</button>
+        }
+        <button mat-flat-button class="next" (click)="primary()">
+          @if (dr.step === 6) {
+            <mat-icon>check</mat-icon>
+          }
+          {{ nextLabel() }}
+          @if (dr.step !== 6) {
+            <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+          }
+        </button>
+      </div>
+    </div>
+
+    <div class="clm-split" [style.--clm-panel-top.px]="panelTop()">
+      <div>
+        @switch (dr.step) {
+          @case (1) {
+            <clm-step-date />
+          }
+          @case (2) {
+            <clm-step-materials />
+          }
+          @case (3) {
+            <clm-step-transport />
+          }
+          @case (4) {
+            <clm-step-timeslot />
+          }
+          @case (5) {
+            <clm-step-other />
+          }
+          @default {
+            <clm-step-overview (goTo)="go($event)" (confirmed)="primary()" (left)="leave()" />
+          }
+        }
+        @if (dr.step < 6) {
+          <div class="clm-row foot">
+            <button class="clm-link" (click)="leave()">Cancel</button>
+            <span class="clm-sp"></span>
+            @if (dr.mode === 'new') {
+              <button mat-stroked-button (click)="ctx.flow.saveDraft()">
+                <mat-icon>save</mat-icon>Save draft
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <clm-create-summary />
+    </div>
+  </div>
+}

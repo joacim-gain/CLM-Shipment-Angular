@@ -1,0 +1,221 @@
+@let dr = d();
+<div class="clm-banner">
+  <mat-icon>warning</mat-icon>
+  <div>
+    <b>Important</b>
+    <p>
+      Due to local conditions there is only one entrance to unloading points A1 to A5. Please arrive
+      on time — late arrivals can lead to waiting times.
+    </p>
+  </div>
+</div>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>General</mat-card-title
+      ><mat-card-subtitle>Name the shipment and tell us who it is for.</mat-card-subtitle>
+    </div>
+  </div>
+  <div class="clm-grid2">
+    <div class="clm-field">
+      <label for="f-name">Shipment name *</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <input
+          matInput
+          id="f-name"
+          [ngModel]="dr.name"
+          (ngModelChange)="ctx.set({ name: $event })"
+          placeholder="e.g. B06-OG01-Luftung_Montage der Kanäle"
+          maxlength="80"
+          [errorStateMatcher]="ctx.matcher('name')"
+        />
+        <mat-error>{{ ctx.err('name') }}</mat-error>
+      </mat-form-field>
+    </div>
+    <div class="clm-field">
+      <span class="clm-label" id="f-sender">Organization *</span>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-select
+          [ngModel]="dr.sender"
+          [disabled]="dr.wpLocked"
+          (ngModelChange)="setSender($event)"
+          aria-labelledby="f-sender"
+          [errorStateMatcher]="ctx.matcher('sender')"
+        >
+          @for (o of orgs; track o) {
+            <mat-option [value]="o">{{ o }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ ctx.err('sender') }}</mat-error>
+      </mat-form-field>
+    </div>
+  </div>
+  <mat-checkbox
+    class="express"
+    [class.flash]="expressFlash()"
+    [checked]="dr.express"
+    (change)="setExpress($event.checked)"
+  >
+    <span class="strong">Express shipment</span
+    ><span class="clm-check-hint">Allows booking on short notice (marked days below).</span>
+  </mat-checkbox>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card" [class.has-error]="!!ctx.err('date')">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Select date</mat-card-title
+      ><mat-card-subtitle>When do you want to schedule the shipment?</mat-card-subtitle>
+    </div>
+    <div class="clm-row week-nav">
+      <button
+        mat-icon-button
+        class="clm-icon-btn-sm"
+        [disabled]="!canPrevWeek()"
+        matTooltip="Previous week"
+        aria-label="Previous week"
+        (click)="week(-1)"
+      >
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <b>{{ weekLabel() }}</b>
+      <button
+        mat-icon-button
+        class="clm-icon-btn-sm"
+        matTooltip="Next week"
+        aria-label="Next week"
+        (click)="week(1)"
+      >
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </div>
+  <div class="clm-sel-grid days">
+    @for (day of days(); track day.date) {
+      <button
+        class="clm-stile day"
+        [class.on]="day.date === dr.date"
+        [class.off]="day.off"
+        [matTooltip]="day.tip"
+        [attr.aria-pressed]="day.date === dr.date"
+        [attr.aria-disabled]="day.off"
+        (click)="pickDay(day)"
+      >
+        <b>{{ day.label }}</b>
+        <img [src]="'fig/w-' + day.icon + '.svg'" width="32" height="32" alt="" />
+        <span class="temp"
+          ><span class="lo">{{ day.lo }}°</span><span class="hi">{{ day.hi }}°</span></span
+        >
+        <small><mat-icon>south_east</mat-icon> {{ day.wind }} km/h</small>
+        @if (day.state === 'express') {
+          <span class="clm-pill error">Express</span>
+        }
+      </button>
+    }
+  </div>
+  <div class="clm-row clm-cap">
+    <span class="clm-pill error">Express</span>Only bookable as express shipment · Weekends are
+    closed
+  </div>
+  <div class="clm-grid2">
+    <div class="clm-field">
+      <label for="f-date">Shipment date *</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <input
+          matInput
+          id="f-date"
+          [matDatepicker]="picker"
+          [ngModel]="selectedDate()"
+          [min]="minDate()"
+          [max]="maxDate"
+          [matDatepickerFilter]="dateFilter()"
+          (ngModelChange)="pickDate($event)"
+          placeholder="dd.mm.yyyy"
+          [errorStateMatcher]="ctx.matcher('date')"
+        />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker [calendarHeaderComponent]="calendarHeader" />
+      </mat-form-field>
+    </div>
+    <div class="clm-field">
+      <label for="f-tz">Site time zone</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="clm-readonly"
+        ><input matInput id="f-tz" value="Europe/Zurich" readonly
+      /></mat-form-field>
+    </div>
+  </div>
+  @if (ctx.err('date'); as e) {
+    <div class="clm-card-error">{{ e }}</div>
+  }
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card" [class.has-error]="!!ctx.err('wp')">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Working package</mat-card-title>
+      <mat-card-subtitle>{{
+        dr.wpLocked
+          ? 'This shipment is added to the working package you started from.'
+          : 'Assign the shipment to the working package it belongs to.'
+      }}</mat-card-subtitle>
+    </div>
+    @if (dr.wpLocked) {
+      <span class="clm-pill olive"><mat-icon>lock</mat-icon>Locked</span>
+    }
+  </div>
+  @if (!dr.wpLocked) {
+    <div class="clm-row wp-tools">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="clm-search clm-grow">
+        <mat-icon matPrefix>search</mat-icon>
+        <input
+          matInput
+          placeholder="Search working packages"
+          [value]="wpQuery()"
+          (input)="wpQuery.set($any($event.target).value)"
+          aria-label="Search working packages"
+        />
+      </mat-form-field>
+      <mat-checkbox [checked]="wpAll()" (change)="wpAll.set($event.checked)"
+        >Show all organizations</mat-checkbox
+      >
+    </div>
+  }
+  @if (wps().length) {
+    <div class="wp-cards">
+      @for (x of wps(); track x.w.id) {
+        <clm-wp-card
+          [title]="x.w.title"
+          [trade]="x.w.trade"
+          [building]="x.w.building"
+          [floor]="x.w.floor"
+          [dates]="x.dates"
+          [sender]="x.w.sender"
+          [counts]="x.counts"
+          [status]="x.status"
+          [selected]="x.w.id === dr.wpId"
+          (activate)="pickWp(x.w.id)"
+        />
+      }
+    </div>
+  } @else {
+    <div class="clm-cap">
+      No working package found. <button class="clm-link" (click)="newWp()">Create a new one</button>
+    </div>
+  }
+  @if (outside(); as wp) {
+    <div class="clm-banner">
+      <mat-icon>event_busy</mat-icon>
+      <div>
+        <b>Date is outside the booking window</b>
+        <p>
+          {{ wp.title }} runs from {{ fmtDate(wp.from) }} to {{ fmtDate(wp.to) }}. You can still
+          create the shipment, but the site team will review it.
+        </p>
+      </div>
+    </div>
+  }
+  @if (ctx.err('wp'); as e) {
+    <div class="clm-card-error">{{ e }}</div>
+  }
+</mat-card>

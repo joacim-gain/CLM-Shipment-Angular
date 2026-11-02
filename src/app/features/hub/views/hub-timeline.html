@@ -1,0 +1,241 @@
+@let r = range();
+@let p = prefs();
+<div class="tl">
+  <div class="tl-bar">
+    <button mat-button class="today" (click)="goToday()">TODAY</button>
+    <button
+      mat-icon-button
+      cdkOverlayOrigin
+      #calOrigin="cdkOverlayOrigin"
+      matTooltip="Pick a date"
+      aria-label="Pick a date"
+      (click)="calendarOpen.set(!calendarOpen())"
+    >
+      <mat-icon>calendar_today</mat-icon>
+    </button>
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="calOrigin"
+      [cdkConnectedOverlayOpen]="calendarOpen()"
+      [cdkConnectedOverlayPositions]="calendarPositions"
+      (overlayOutsideClick)="calendarOpen.set(false)"
+      (detach)="calendarOpen.set(false)"
+    >
+      <div class="cal-pop">
+        <mat-calendar
+          [startAt]="startDate()"
+          [headerComponent]="calendarHeader"
+          (selectedChange)="pickDate($event)"
+        />
+        <div class="cal-foot">
+          <button mat-button class="clm-btn-sm" (click)="pickDate(todayDate())">Today</button>
+        </div>
+      </div>
+    </ng-template>
+    <button
+      mat-icon-button
+      class="nav"
+      [matTooltip]="'Previous ' + (r.year ? '3 months' : '4 weeks')"
+      aria-label="Previous period"
+      (click)="shift(-1)"
+    >
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <span class="tl-range" [class.flash]="flash()">{{ rangeLabel() }}</span>
+    <button
+      mat-icon-button
+      class="nav"
+      [matTooltip]="'Next ' + (r.year ? '3 months' : '4 weeks')"
+      aria-label="Next period"
+      (click)="shift(1)"
+    >
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+    <span class="clm-sp"></span>
+    <button mat-button class="clm-neutral-btn" (click)="toggleAll()">
+      <mat-icon>{{ anyOpen() ? 'unfold_less' : 'unfold_more' }}</mat-icon
+      >{{ anyOpen() ? 'Collapse all' : 'Expand all' }}
+    </button>
+  </div>
+
+  @if (groups().length) {
+    <div class="tl-grid" #grid [style]="gridStyle()">
+      <div class="tl-corner">
+        <div class="tl-colhead">
+          <b>{{ groupLabel() }}</b>
+          @if (infoLabel()) {
+            <span>{{ infoLabel() }}</span>
+          }
+        </div>
+      </div>
+      <div class="tl-hd">
+        <div class="tl-weeks" [style.grid-template-columns]="header().template">
+          @for (c of header().top; track $index) {
+            <div [style.grid-column]="c.span ? 'span ' + c.span : null">{{ c.label }}</div>
+          }
+        </div>
+        <div class="tl-days" [style.grid-template-columns]="bg().template">
+          @for (c of header().bottom; track $index) {
+            <div [class]="c.cls" [matTooltip]="c.tip ?? ''">{{ c.label }}</div>
+          }
+        </div>
+      </div>
+
+      <ng-template #bgCols>
+        <div class="tl-bgcols" [style.grid-template-columns]="bg().template">
+          @for (c of bg().cols; track $index) {
+            <div [class]="c.cls"></div>
+          }
+        </div>
+      </ng-template>
+
+      @for (row of rows(); track $index) {
+        @switch (row.kind) {
+          @case ('group') {
+            <div class="tl-row">
+              <div
+                class="tl-lcell g tl-left"
+                role="button"
+                tabindex="0"
+                (click)="openGroup.emit(row.g.key)"
+                (keydown.enter)="openGroup.emit(row.g.key)"
+              >
+                @if (row.g.wp) {
+                  <i class="trade-bar" [style.background]="tradeColor(row.g.trade)"></i>
+                }
+                <button
+                  class="caret"
+                  [class.open]="row.open"
+                  [attr.aria-expanded]="row.open"
+                  [matTooltip]="(row.open ? 'Hide' : 'Show') + ' shipments'"
+                  [attr.aria-label]="(row.open ? 'Hide' : 'Show') + ' shipments of ' + row.g.title"
+                  (click)="toggle($event, row.key)"
+                  (keydown.enter)="$event.stopPropagation()"
+                >
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+                <div class="tt">
+                  <div
+                    class="t1"
+                    [matTooltip]="row.g.title"
+                    [innerHTML]="row.g.title | clmHighlight: p.search"
+                  ></div>
+                  @if (row.info) {
+                    <div class="t2" [innerHTML]="row.info | clmHighlight: p.search"></div>
+                  }
+                </div>
+                <span class="clm-count">{{ row.count }}</span>
+              </div>
+              <div class="tl-rcell">
+                <ng-container [ngTemplateOutlet]="bgCols" />
+                @if (row.span; as b) {
+                  <div
+                    class="tl-span"
+                    [class]="b.cls"
+                    [style]="b.style"
+                    [matTooltip]="b.tip"
+                    matTooltipClass="clm-tip-multiline"
+                    role="button"
+                    tabindex="-1"
+                    (click)="b.jump ? jump($event, b.jump) : openGroup.emit(row.g.key)"
+                    (keydown.enter)="b.jump ? jump($event, b.jump) : openGroup.emit(row.g.key)"
+                  >
+                    {{ b.label }}
+                  </div>
+                }
+                @for (t of row.ticks; track $index) {
+                  <i class="tl-tick" [style.left.%]="t.left" [style.background]="t.color"></i>
+                }
+              </div>
+            </div>
+          }
+          @case ('ship') {
+            <div class="tl-row">
+              <div
+                class="tl-lcell s tl-left"
+                role="button"
+                tabindex="0"
+                (click)="openShipment.emit(row.s.id)"
+                (keydown.enter)="openShipment.emit(row.s.id)"
+              >
+                <clm-ship-icon [status]="row.s.status" />
+                <div class="tt">
+                  <div
+                    class="t1"
+                    [matTooltip]="row.s.name"
+                    [innerHTML]="row.s.name | clmHighlight: p.search"
+                  ></div>
+                  <div class="t2" [innerHTML]="row.line | clmHighlight: p.search"></div>
+                </div>
+              </div>
+              <div class="tl-rcell s">
+                <ng-container [ngTemplateOutlet]="bgCols" />
+                @if (row.bar.jump) {
+                  <div
+                    class="tl-span out"
+                    [style]="row.bar.style"
+                    [matTooltip]="row.bar.tip"
+                    role="button"
+                    tabindex="-1"
+                    (click)="jump($event, row.bar.jump)"
+                    (keydown.enter)="jump($event, row.bar.jump)"
+                  >
+                    {{ row.bar.label }}
+                  </div>
+                } @else {
+                  <div
+                    class="tl-ship"
+                    [style]="row.bar.style"
+                    [matTooltip]="row.bar.tip"
+                    matTooltipClass="clm-tip-multiline"
+                    role="button"
+                    tabindex="-1"
+                    (click)="openShipment.emit(row.s.id)"
+                    (keydown.enter)="openShipment.emit(row.s.id)"
+                  >
+                    @if (row.bar.icon) {
+                      <mat-icon [svgIcon]="'clm:' + row.bar.icon" />
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+          @case ('none') {
+            <div class="tl-row">
+              <div class="tl-lcell s tl-left"><div class="tt clm-cap">No shipments yet</div></div>
+              <div class="tl-rcell s"><ng-container [ngTemplateOutlet]="bgCols" /></div>
+            </div>
+          }
+          @case ('more') {
+            <div class="tl-row">
+              <div class="tl-showall tl-left">
+                @if (row.more) {
+                  <button class="clm-link" (click)="toggleShowAll.emit(row.key)">
+                    <mat-icon>{{ row.all ? 'expand_less' : 'expand_more' }}</mat-icon
+                    >{{ row.all ? 'Show less' : 'Show all ' + row.total }}
+                  </button>
+                }
+                @if (row.addWp) {
+                  @if (row.more) {
+                    <span class="clm-faint">·</span>
+                  }
+                  <button class="clm-link" (click)="addShipment.emit(row.addWp)">
+                    <mat-icon>add</mat-icon>Add shipment
+                  </button>
+                }
+              </div>
+              <div class="tl-rcell s showall"><ng-container [ngTemplateOutlet]="bgCols" /></div>
+            </div>
+          }
+        }
+      }
+      <div class="tl-row">
+        <div class="tl-left tl-fill"></div>
+        <div class="tl-rcell tl-fill"><ng-container [ngTemplateOutlet]="bgCols" /></div>
+      </div>
+    </div>
+  } @else {
+    <clm-hub-empty (clearFilters)="resetFilters.emit()" />
+  }
+</div>

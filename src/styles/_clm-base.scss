@@ -1,0 +1,107 @@
+/* Amlog DS tokens as CSS variables (Figma: Design System for Amlog · 7IfPi3Y42UXVLnoa1SSdEN).
+   Same names and values as the prototype (clm-shipments-demo/assets/css/app.css), so component
+   styles can use the DS tokens directly. Material components get their values from _amlog-theme.scss. */
+:root {
+  /* color */
+  --color-action-primary: #969300;
+  --color-olive-600: #7c7900;
+  --color-olive-700: #6a6800;
+  --color-olive-200: #c0be69;
+  --color-text-link: #7c7900;
+  --color-icon-action: #7c7900;
+  --color-surface-selected: #efefd8;
+  --color-action-outline-hover: #f5f5e6;
+  --color-surface-default: #ffffff;
+  --color-surface-page: #f9f9f9;
+  --color-surface-subtle: #f2f2f2;
+  --color-border-default: #dcdcdd;
+  --color-border-strong: #818187;
+  --color-border-focus: #969300;
+  --color-border-nav: #e5e5e7;
+  --color-icon-default: #54545d;
+  --color-raisin-500: #262633;
+  --color-raisin-400: #373741;
+  --color-raisin-300: #54545d;
+  --color-raisin-100: #b0b0b5;
+  --color-raisin-50: #dfdfe1;
+  --color-text-primary: rgba(0, 0, 0, 0.87);
+  --color-text-secondary: rgba(0, 0, 0, 0.6);
+  --color-text-tertiary: rgba(0, 0, 0, 0.38);
+  --color-text-disabled: rgba(0, 0, 0, 0.2);
+  --color-brand-blue: #4231b1;
+  --color-data-12: #2e60aa;
+  --color-status-success-bg: #d1fae5;
+  --color-status-success-fg: #065f46;
+  --color-status-warning-bg: #fef3c7;
+  --color-status-warning-fg: #92400e;
+  --color-status-error-bg: #ffdbd5;
+  --color-status-error-fg: #b51c00;
+  --color-status-neutral-bg: #f2f2f2;
+  --color-status-neutral-fg: #373741;
+  --color-status-inactive-bg: #dfdfe1;
+  --color-status-inactive-fg: #54545d;
+  /* radius */
+  --radius-small: 4px;
+  --radius-medium: 6px;
+  --radius-large: 8px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+  /* elevation */
+  --elevation-card: 0 2px 4px 0 rgba(0, 0, 0, 0.14);
+  --elevation-dropdown: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
+  --elevation-dialog: 0 12px 12px 0 rgba(0, 0, 0, 0.24);
+  --elevation-topbar: 0 4px 4px 0 rgba(0, 0, 0, 0.12);
+  /* size */
+  --size-control-small: 32px;
+  --size-control-medium: 40px;
+  /* app shell (used by sticky panels to fill the screen height) */
+  --clm-shell-top: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  font:
+    400 14px/18px Roboto,
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.5px;
+  color: var(--color-text-primary);
+  background: var(--color-surface-page);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+button {
+  font: inherit;
+  letter-spacing: inherit;
+}
+mark {
+  background: #ffeecc;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+@media print {
+  body {
+    overflow: visible;
+    height: auto;
+  }
+}

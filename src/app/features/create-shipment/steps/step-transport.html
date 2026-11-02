@@ -1,0 +1,149 @@
+@let dr = d();
+<mat-card appearance="raised" class="clm-card" [class.has-error]="!!ctx.err('vehicle')">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Vehicle</mat-card-title>
+      <mat-card-subtitle
+        >Which vehicle do you need for the shipment?
+        @if (recommended(); as r) {
+          Recommended for {{ recommendedFor() }}: <b>{{ vehicleName(r) }}</b
+          >.
+        }
+      </mat-card-subtitle>
+    </div>
+  </div>
+  <div class="clm-sel-grid vehicles">
+    @for (v of vehicles; track v.id) {
+      <button
+        class="clm-stile veh"
+        [class.on]="dr.vehicle === v.id"
+        [attr.aria-pressed]="dr.vehicle === v.id"
+        (click)="pickVehicle(v.id)"
+      >
+        @if (dr.vehicle === v.id) {
+          <span class="clm-stile-check"><mat-icon>check</mat-icon></span>
+        }
+        <mat-icon class="veh-ic" [svgIcon]="'clm:' + v.icon" />
+        <b>{{ v.name }}</b
+        ><small>{{ v.desc }}</small>
+        @if (v.id === recommended()) {
+          <span class="clm-pill olive">Recommended</span>
+        }
+      </button>
+    }
+  </div>
+  @if (ctx.err('vehicle'); as e) {
+    <div class="clm-card-error">{{ e }}</div>
+  }
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Access &amp; arrival</mat-card-title
+      ><mat-card-subtitle>How will the vehicle reach the site?</mat-card-subtitle>
+    </div>
+  </div>
+  <div class="clm-grid2">
+    <div class="clm-field">
+      <span class="clm-label" id="f-gate">Arrival gate *</span>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-select
+          [value]="dr.gate"
+          (selectionChange)="ctx.set({ gate: $event.value })"
+          aria-labelledby="f-gate"
+        >
+          @for (g of gates; track g) {
+            <mat-option [value]="g">{{ g }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="clm-field" [class.has-error]="!!ctx.err('vehicles')">
+      <label for="f-vn">Number of vehicles *</label>
+      <div class="clm-qty">
+        <button type="button" aria-label="Fewer vehicles" (click)="setVehicles(dr.vehicles - 1)">
+          <mat-icon>remove</mat-icon>
+        </button>
+        <input
+          id="f-vn"
+          type="number"
+          min="1"
+          max="20"
+          [value]="dr.vehicles"
+          (change)="setVehicles(+$any($event.target).value)"
+        />
+        <button type="button" aria-label="More vehicles" (click)="setVehicles(dr.vehicles + 1)">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="clm-field">
+      <label for="f-plate">License plate</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic"
+        ><input
+          #plate
+          matInput
+          id="f-plate"
+          [value]="dr.plate"
+          placeholder="ZH 123 456"
+          (input)="setPlate(plate)"
+      /></mat-form-field>
+    </div>
+    <div class="clm-field">
+      <label for="f-phone">Driver phone</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic"
+        ><input
+          matInput
+          id="f-phone"
+          inputmode="tel"
+          [value]="dr.phone"
+          placeholder="+41 79 123 45 67"
+          (input)="ctx.set({ phone: $any($event.target).value })"
+      /></mat-form-field>
+    </div>
+  </div>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Site map</mat-card-title
+      ><mat-card-subtitle
+        >Check the access route and unloading points before you continue.</mat-card-subtitle
+      >
+    </div>
+    <button mat-stroked-button (click)="fullscreen()">
+      <mat-icon>fullscreen</mat-icon>Full screen
+    </button>
+  </div>
+  <div class="map">
+    <img src="img/site-map.jpg" alt="Site map" />
+    @for (p of pins; track p[0]) {
+      <button
+        class="pin"
+        [style.left.%]="p[1]"
+        [style.top.%]="p[2]"
+        [matTooltip]="'Unloading point ' + p[0]"
+        [attr.aria-label]="'Unloading point ' + p[0]"
+        (click)="pin(p[0])"
+      >
+        <mat-icon>location_on</mat-icon><span>{{ p[0] }}</span>
+      </button>
+    }
+  </div>
+  <div class="clm-row clm-cap legend">
+    <span class="clm-row"
+      ><span class="clm-dot" style="background: var(--color-action-primary)"></span>Access
+      route</span
+    >
+    <span class="clm-row"
+      ><span class="clm-dot" style="background: var(--color-brand-blue)"></span>Unloading points
+      A1–A5</span
+    >
+    <span class="clm-row"
+      ><span class="clm-dot" style="background: var(--color-status-error-fg)"></span>Restricted
+      zone</span
+    >
+  </div>
+</mat-card>

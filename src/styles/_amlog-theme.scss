@@ -1,0 +1,368 @@
+// Amlog DS → Angular Material theme.
+// Source of the values: the :root tokens in clm-shipments-demo/assets/css/app.css,
+// which mirror the Amlog DS Figma variables 1:1.
+//
+// DRAFT — written against @angular/material 22 (the mat.theme / *-overrides API, v19+).
+// Override keys are the CSS variable names without the `--mat-<component>-` prefix;
+// every key below was checked against the 22.2.5 package.
+//
+// Use it once in styles.scss:
+//   @use './styles/amlog-theme';
+//   html { @include amlog-theme.apply(); }
+@use '@angular/material' as mat;
+
+// --- Amlog tokens (app.css :root) ---
+$action-primary: #969300; // --color-action-primary
+$olive-600: #7c7900; // --color-olive-600 (hover, links, icons)
+$surface-selected: #efefd8; // --color-surface-selected
+$outline-hover: #f5f5e6; // --color-action-outline-hover
+$border-default: #dcdcdd; // --color-border-default
+$border-strong: #818187; // --color-border-strong
+$text-primary: rgba(0, 0, 0, 0.87);
+$text-secondary: rgba(0, 0, 0, 0.6);
+$text-tertiary: rgba(0, 0, 0, 0.38);
+$raisin-500: #262633; // --color-raisin-500 (dropdown item text)
+$icon-default: #54545d; // --color-icon-default
+$error-fg: #b51c00; // --color-status-error-fg
+$radius-small: 4px;
+$radius-medium: 6px;
+$radius-large: 8px;
+$elevation-dialog: 0 12px 12px 0 rgba(0, 0, 0, 0.24);
+$elevation-card: 0 2px 4px 0 rgba(0, 0, 0, 0.14);
+$raisin-400: #373741; // --color-raisin-400 (snackbar)
+$olive-200: #c0be69; // --color-olive-200
+$surface-subtle: #f2f2f2; // --color-surface-subtle
+$tab-inactive: #818187;
+$elevation-dropdown: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
+$shadow-form-dropdown: 0 4px 6px rgba(0, 0, 0, 0.16); // CLM form dropdown (Figma 31468:83736)
+$control-small: 32px;
+$control-medium: 40px;
+
+@mixin apply() {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$azure-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // System level: olive replaces the generated primary everywhere (datepicker, focus, checkboxes …)
+  @include mat.theme-overrides(
+    (
+      primary: $action-primary,
+      on-primary: #fff,
+      primary-container: $surface-selected,
+      on-primary-container: $olive-600,
+      error: $error-fg,
+      surface: #fff,
+      on-surface: $text-primary,
+      on-surface-variant: $text-secondary,
+      outline: $border-default,
+      outline-variant: $border-default,
+    )
+  );
+
+  // DS Input · small (32px, radius small, 12px text)
+  @include mat.form-field-overrides(
+    (
+      container-height: $control-small,
+      container-vertical-padding: 6px,
+      container-text-size: 12px,
+      container-text-line-height: 16px,
+      container-text-tracking: 0.2px,
+      outlined-container-shape: $radius-small,
+      outlined-outline-color: $border-default,
+      outlined-hover-outline-color: $border-strong,
+      outlined-focus-outline-color: $action-primary,
+      outlined-focus-outline-width: 2px,
+      outlined-error-outline-color: $error-fg,
+      outlined-error-hover-outline-color: $error-fg,
+      outlined-error-focus-outline-color: $error-fg,
+      outlined-input-text-placeholder-color: $text-secondary,
+      error-text-color: $error-fg,
+      subscript-text-size: 10px,
+      subscript-text-tracking: 0.4px,
+    )
+  );
+
+  // CLM form dropdown — Figma 31468:83736 (prototype app.css → .cselect, .dd-pop, .dd-i)
+  @include mat.select-overrides(
+    (
+      trigger-text-size: 12px,
+      trigger-text-line-height: 16px,
+      trigger-text-tracking: 0.2px,
+      enabled-trigger-text-color: $text-primary,
+      placeholder-text-color: $text-secondary,
+      enabled-arrow-color: $icon-default,
+      focused-arrow-color: $icon-default,
+      invalid-arrow-color: $icon-default,
+      panel-background-color: #fff,
+      container-elevation-shadow: $shadow-form-dropdown,
+    )
+  );
+
+  // Items: raisin text, olive-50 hover, selected = olive text + olive check (no fill)
+  @include mat.option-overrides(
+    (
+      label-text-color: $raisin-500,
+      label-text-size: 14px,
+      label-text-line-height: 20px,
+      label-text-tracking: 0,
+      hover-state-layer-color: $outline-hover,
+      focus-state-layer-color: $outline-hover,
+      selected-state-layer-color: transparent,
+      selected-state-label-text-color: $action-primary,
+    )
+  );
+
+  @include mat.pseudo-checkbox-overrides(
+    (
+      minimal-selected-checkmark-color: $action-primary,
+    )
+  );
+
+  // DS Button · medium (40px, radius medium). Filled = primary, text = text button.
+  @include mat.button-overrides(
+    (
+      filled-container-height: $control-medium,
+      filled-container-shape: $radius-medium,
+      filled-container-color: $action-primary,
+      filled-label-text-color: #fff,
+      filled-horizontal-padding: 12px,
+      filled-label-text-tracking: 0.5px,
+      text-container-height: $control-medium,
+      text-container-shape: $radius-medium,
+      text-label-text-color: $olive-600,
+      text-horizontal-padding: 12px,
+      text-label-text-tracking: 0.5px,
+      text-state-layer-color: $olive-600,
+      // Outlined = the DS default button (white, grey border, olive text)
+      outlined-container-height: $control-medium,
+      outlined-container-shape: $radius-medium,
+      outlined-outline-color: $border-default,
+      outlined-label-text-color: $olive-600,
+      outlined-horizontal-padding: 12px,
+      outlined-label-text-tracking: 0.5px,
+      outlined-state-layer-color: $olive-600,
+    )
+  );
+
+  @include mat.icon-button-overrides(
+    (
+      icon-color: #54545d,
+      state-layer-size: 36px,
+    )
+  );
+
+  // DS Feedback/Dialog: radius large, elevation/dialog
+  @include mat.dialog-overrides(
+    (
+      container-shape: $radius-large,
+      container-elevation-shadow: $elevation-dialog,
+      container-color: #fff,
+    )
+  );
+
+  // Calendar — prototype calendar popover (hub.js → calendarPop, app.css → .popover, .cal-d)
+  @include mat.datepicker-overrides(
+    (
+      calendar-container-background-color: #fff,
+      calendar-container-shape: $radius-large,
+      calendar-container-elevation-shadow: $elevation-dropdown,
+      calendar-container-text-color: $text-primary,
+      calendar-text-size: 12px,
+      calendar-header-text-color: $text-secondary,
+      calendar-header-text-size: 11px,
+      calendar-header-text-weight: 400,
+      calendar-header-divider-color: transparent,
+      calendar-period-button-text-color: $text-primary,
+      calendar-period-button-text-weight: 500,
+      calendar-period-button-icon-color: $icon-default,
+      calendar-navigation-button-icon-color: $icon-default,
+      calendar-body-label-text-color: $text-secondary,
+      calendar-date-text-color: $text-primary,
+      calendar-date-disabled-state-text-color: $text-tertiary,
+      calendar-date-hover-state-background-color: $outline-hover,
+      calendar-date-focus-state-background-color: $outline-hover,
+      calendar-date-selected-state-background-color: $action-primary,
+      calendar-date-selected-state-text-color: #fff,
+      calendar-date-today-outline-color: $action-primary,
+      calendar-date-today-selected-state-outline-color: $action-primary,
+      toggle-icon-color: $icon-default,
+      toggle-active-state-icon-color: $action-primary,
+    )
+  );
+
+  // DS Card: white, radius large, elevation/card
+  @include mat.card-overrides(
+    (
+      elevated-container-color: #fff,
+      elevated-container-shape: $radius-large,
+      elevated-container-elevation: $elevation-card,
+      title-text-size: 18px,
+      title-text-weight: 500,
+      title-text-line-height: normal,
+      title-text-tracking: 0.15px,
+      subtitle-text-size: 12px,
+      subtitle-text-weight: 400,
+      subtitle-text-line-height: 16px,
+      subtitle-text-tracking: 0.2px,
+      subtitle-text-color: $text-secondary,
+    )
+  );
+
+  // Page tabs (prototype app.css → .tabs / .tab): uppercase, grey, olive when active, 2px olive indicator
+  @include mat.tabs-overrides(
+    (
+      container-height: 50px,
+      label-text-size: 14px,
+      label-text-weight: 700,
+      label-text-tracking: 1.25px,
+      inactive-label-text-color: $tab-inactive,
+      inactive-hover-label-text-color: $tab-inactive,
+      inactive-focus-label-text-color: $tab-inactive,
+      active-label-text-color: $action-primary,
+      active-hover-label-text-color: $action-primary,
+      active-focus-label-text-color: $action-primary,
+      active-indicator-color: $action-primary,
+      active-hover-indicator-color: $action-primary,
+      active-focus-indicator-color: $action-primary,
+      active-indicator-height: 2px,
+      divider-color: $border-default,
+      divider-height: 2px,
+    )
+  );
+
+  // DS menu (prototype .menu): radius large, elevation/dropdown, 48px items, olive-50 hover
+  @include mat.menu-overrides(
+    (
+      container-color: #fff,
+      container-shape: $radius-large,
+      container-elevation-shadow: $elevation-dropdown,
+      item-label-text-color: $text-primary,
+      item-label-text-size: 14px,
+      item-label-text-tracking: 0.5px,
+      item-icon-color: $icon-default,
+      item-hover-state-layer-color: $outline-hover,
+      item-focus-state-layer-color: $outline-hover,
+      divider-color: $border-default,
+    )
+  );
+
+  // DS Snackbar (prototype .toast): raisin, radius small, olive-200 action
+  @include mat.snack-bar-overrides(
+    (
+      container-color: $raisin-400,
+      container-shape: $radius-small,
+      supporting-text-color: #fff,
+      supporting-text-size: 14px,
+      supporting-text-line-height: 18px,
+      button-color: $olive-200,
+    )
+  );
+
+  // DS table (prototype .table): subtle header, 12px grey headline, 14px rows
+  @include mat.table-overrides(
+    (
+      background-color: #fff,
+      header-container-height: 36px,
+      header-headline-color: $text-secondary,
+      header-headline-size: 12px,
+      header-headline-weight: 500,
+      header-headline-tracking: 0.5px,
+      row-item-container-height: 36px,
+      row-item-label-text-size: 14px,
+      row-item-label-text-tracking: 0.5px,
+      row-item-outline-color: $border-default,
+    )
+  );
+
+  // DS chip (prototype .chip): outlined pill, olive-tint fill + olive border when selected
+  @include mat.chips-overrides(
+    (
+      container-height: $control-small,
+      container-shape-radius: 999px,
+      outline-color: $border-default,
+      outline-width: 1px,
+      flat-selected-outline-width: 1px,
+      label-text-color: $text-primary,
+      selected-label-text-color: $text-primary,
+      label-text-size: 14px,
+      label-text-tracking: 0.5px,
+      elevated-container-color: #fff,
+      elevated-selected-container-color: $surface-selected,
+      hover-state-layer-color: $action-primary,
+      selected-hover-state-layer-color: $action-primary,
+    )
+  );
+
+  // DS switch (prototype .switch): slim 34×14 track, 20px handle, olive when on
+  @include mat.slide-toggle-overrides(
+    (
+      track-width: 34px,
+      track-height: 14px,
+      track-shape: 7px,
+      track-outline-width: 0,
+      selected-track-outline-width: 0,
+      unselected-track-color: #b0b0b5,
+      unselected-hover-track-color: #b0b0b5,
+      unselected-focus-track-color: #b0b0b5,
+      unselected-pressed-track-color: #b0b0b5,
+      selected-track-color: $olive-200,
+      selected-hover-track-color: $olive-200,
+      selected-focus-track-color: $olive-200,
+      selected-pressed-track-color: $olive-200,
+      unselected-handle-size: 20px,
+      selected-handle-size: 20px,
+      pressed-handle-size: 20px,
+      handle-shape: 50%,
+      unselected-handle-color: #fff,
+      unselected-hover-handle-color: #fff,
+      unselected-focus-handle-color: #fff,
+      unselected-pressed-handle-color: #fff,
+      selected-handle-color: $action-primary,
+      selected-hover-handle-color: $action-primary,
+      selected-focus-handle-color: $action-primary,
+      selected-pressed-handle-color: $action-primary,
+      handle-elevation-shadow: 0 1px 3px rgba(0, 0, 0, 0.35),
+      unselected-handle-horizontal-margin: 0 -4px,
+      selected-handle-horizontal-margin: 0 18px,
+      unselected-pressed-handle-horizontal-margin: 0 -4px,
+      selected-pressed-handle-horizontal-margin: 0 18px,
+      state-layer-size: 32px,
+    )
+  );
+
+  // DS checkbox (18px box, olive when checked)
+  @include mat.checkbox-overrides(
+    (
+      unselected-icon-color: $icon-default,
+      unselected-hover-icon-color: $icon-default,
+      unselected-focus-icon-color: $icon-default,
+      selected-icon-color: $action-primary,
+      selected-hover-icon-color: $action-primary,
+      selected-focus-icon-color: $action-primary,
+      selected-checkmark-color: #fff,
+      state-layer-size: 32px,
+      touch-target-display: none,
+      label-text-size: 14px,
+      label-text-tracking: 0.1px,
+      label-text-color: $text-primary,
+    )
+  );
+
+  @include mat.tooltip-overrides(
+    (
+      container-color: $raisin-400,
+      container-shape: $radius-small,
+      supporting-text-size: 12px,
+      supporting-text-line-height: 16px,
+      supporting-text-tracking: 0.2px,
+    )
+  );
+}

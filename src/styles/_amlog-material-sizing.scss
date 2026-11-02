@@ -1,0 +1,75 @@
+/* Amlog DS sizing that Material has no token for. Plain CSS, include once globally
+   after the theme (styles.scss: @use './styles/amlog-material-sizing').
+   DS Input · small is 32px; Material's select trigger and datepicker toggle are taller by default. */
+
+/* Select: 24px trigger → 20px, so 6px + 20px + 6px = 32px like the text inputs */
+.mat-mdc-select-trigger,
+.mat-mdc-select-arrow-wrapper {
+  height: 20px;
+}
+
+/* Datepicker toggle inside a 32px field */
+.mat-mdc-form-field .mat-datepicker-toggle {
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-icon-size: 18px;
+}
+.mat-mdc-form-field .mat-datepicker-toggle .mat-mdc-icon-button {
+  padding: 5px;
+}
+.mat-mdc-form-field .mat-datepicker-toggle .mat-mdc-icon-button svg {
+  width: 18px;
+  height: 18px;
+}
+.mat-mdc-form-field-icon-suffix {
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+/* DS Input · small: 12px text inset (Material uses 16px), error text aligned with the field edge */
+.mat-mdc-form-field .mdc-text-field--outlined {
+  padding-left: 12px;
+  padding-right: 8px;
+}
+.mat-mdc-form-field .mat-mdc-form-field-error-wrapper,
+.mat-mdc-form-field .mat-mdc-form-field-hint-wrapper {
+  padding: 0;
+}
+.mat-mdc-form-field .mat-mdc-form-field-error-wrapper {
+  margin-top: 4px;
+}
+
+/* CLM form dropdown panel — Figma 31468:83736 (prototype .dd-pop / .dd-i) */
+.mat-mdc-select-panel.mat-mdc-select-panel {
+  border: 1px solid #ededed;
+  border-radius: 8px;
+  padding: 12px 0;
+  max-height: 280px;
+}
+.mat-mdc-select-panel .mat-mdc-option {
+  box-sizing: border-box;
+  min-height: 36px;
+  padding: 8px 12px;
+  margin-bottom: 2px;
+}
+.mat-mdc-select-panel .mat-mdc-option:last-child {
+  margin-bottom: 0;
+}
+.mat-mdc-select-panel .mat-pseudo-checkbox-minimal {
+  width: 16px;
+  height: 16px;
+}
+
+/* Calendar — prototype calendar popover: 32px round day cells */
+.mat-datepicker-content .mat-calendar {
+  width: 276px;
+  height: auto;
+}
+.mat-datepicker-content .mat-calendar-body-cell-content {
+  border-radius: 50%;
+}
+
+/* Selected chip keeps an olive border (Material uses the same outline colour for both states) */
+.mat-mdc-chip.mat-mdc-chip-selected {
+  --mat-chip-outline-color: #969300;
+}

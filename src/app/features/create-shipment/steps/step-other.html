@@ -1,0 +1,226 @@
+@let dr = d();
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Responsible persons</mat-card-title
+      ><mat-card-subtitle>Who is in charge of this delivery on site?</mat-card-subtitle>
+    </div>
+  </div>
+  <div class="clm-row persons">
+    @for (c of contacts(); track c.role) {
+      <div class="person-card">
+        <span class="clm-avatar">{{ c.p.name | clmInitials }}</span>
+        <div class="clm-grow">
+          <div class="clm-overline">{{ c.label }}</div>
+          <b class="strong">{{ c.p.name }}{{ c.p.me ? ' (you)' : '' }}</b>
+          <div class="clm-cap">{{ c.p.phone }}<br />{{ c.p.email }}</div>
+        </div>
+        @if (c.role === 'onsite') {
+          <button
+            mat-icon-button
+            class="clm-icon-btn-sm"
+            matTooltip="Change"
+            aria-label="Change onsite contact"
+            (click)="pick('onsite')"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        }
+      </div>
+    }
+  </div>
+  <div class="clm-grid2">
+    <div class="clm-field">
+      <span class="clm-label" id="f-order">Order responsible</span>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-select
+          [value]="dr.orderResp"
+          placeholder="Select person"
+          (selectionChange)="ctx.set({ orderResp: $event.value })"
+          aria-labelledby="f-order"
+        >
+          @for (p of people(); track p.id) {
+            <mat-option [value]="p.id">{{ p.name }} · {{ p.org }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="clm-field">
+      <span class="clm-label" id="f-deliv">Delivery responsible</span>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-select
+          [value]="dr.deliveryResp"
+          placeholder="Select person"
+          (selectionChange)="ctx.set({ deliveryResp: $event.value })"
+          aria-labelledby="f-deliv"
+        >
+          @for (p of people(); track p.id) {
+            <mat-option [value]="p.id">{{ p.name }} · {{ p.org }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+  <button mat-button class="start" (click)="addPerson()">
+    <mat-icon>person_add</mat-icon>Add person
+  </button>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Documents</mat-card-title
+      ><mat-card-subtitle
+        >Delivery notes, permits or plans · PDF, DOCX, PPTX up to 20 MB.</mat-card-subtitle
+      >
+    </div>
+  </div>
+  <button
+    type="button"
+    class="clm-drop"
+    [class.over]="dragOver()"
+    (click)="docInput.click()"
+    (dragover)="$event.preventDefault(); dragOver.set(true)"
+    (dragleave)="dragOver.set(false)"
+    (drop)="onDrop($event)"
+  >
+    <mat-icon>upload</mat-icon
+    ><span>Drag files here or <span class="clm-link-t">browse</span></span>
+  </button>
+  <input
+    #docInput
+    type="file"
+    multiple
+    accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+    hidden
+    (change)="onPickDocs(docInput)"
+  />
+  @if (dr.docs.length) {
+    <div>
+      @for (x of dr.docs; track $index; let i = $index) {
+        <div class="clm-row-box">
+          <span class="clm-dic"><mat-icon>description</mat-icon></span>
+          <div class="grow">
+            <b>{{ x.name }}</b>
+            <div class="clm-cap">{{ x.type }} · {{ x.size }} · uploaded just now</div>
+          </div>
+          <button
+            mat-icon-button
+            class="clm-icon-btn-sm"
+            matTooltip="Remove"
+            [attr.aria-label]="'Remove ' + x.name"
+            (click)="removeDoc(i)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Photos</mat-card-title
+      ><mat-card-subtitle>Optional · helps the site team identify the load.</mat-card-subtitle>
+    </div>
+  </div>
+  <div class="clm-photos">
+    @for (p of dr.photos; track $index; let i = $index) {
+      <div class="clm-photo">
+        <button
+          type="button"
+          class="open"
+          (click)="openPhoto(i)"
+          [attr.aria-label]="'Open photo ' + (i + 1)"
+        >
+          <img [src]="p" alt="" />
+        </button>
+        <button type="button" class="rm" aria-label="Remove photo" (click)="removePhoto(i)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    }
+    <button type="button" class="clm-add-tile" (click)="photoInput.click()">
+      <mat-icon>add_a_photo</mat-icon>Add photo
+    </button>
+    <input
+      #photoInput
+      type="file"
+      multiple
+      accept="image/*"
+      hidden
+      (change)="onPickPhotos(photoInput)"
+    />
+  </div>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Sustainability</mat-card-title
+      ><mat-card-subtitle
+        >Place of origin of the delivery — used for the CO₂ report.</mat-card-subtitle
+      >
+    </div>
+  </div>
+  <div class="clm-grid3">
+    <div class="clm-field clm-span2">
+      <label for="f-origin">Address *</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <input
+          matInput
+          id="f-origin"
+          [ngModel]="dr.origin"
+          placeholder="Street, ZIP, city"
+          (ngModelChange)="ctx.set({ origin: $event })"
+          (change)="originChanged($any($event.target).value)"
+          [errorStateMatcher]="ctx.matcher('origin')"
+        />
+        <mat-error>{{ ctx.err('origin') }}</mat-error>
+      </mat-form-field>
+    </div>
+    <div class="clm-field">
+      <label for="f-km">Kilometers</label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic"
+        ><input
+          matInput
+          id="f-km"
+          type="number"
+          min="0"
+          [value]="dr.km"
+          placeholder="Calculated from the address"
+          (input)="ctx.set({ km: $any($event.target).value })"
+      /></mat-form-field>
+    </div>
+  </div>
+  <mat-checkbox [checked]="dr.multi" (change)="setMulti($event.checked)"
+    >Has multiple vehicles / transport modes</mat-checkbox
+  >
+  @if (dr.multi) {
+    <div class="clm-field" [class.has-error]="!!ctx.err('modes')">
+      <span class="clm-label">Transport modes</span>
+      <div class="clm-chips" role="group" aria-label="Transport modes">
+        @for (x of modes; track x.m) {
+          <button
+            class="fchip outline"
+            [class.on]="dr.modes.includes(x.m)"
+            [attr.aria-pressed]="dr.modes.includes(x.m)"
+            (click)="toggleMode(x.m)"
+          >
+            @if (x.svg) {
+              <mat-icon [svgIcon]="'clm:' + x.svg" />
+            } @else {
+              <mat-icon>{{ x.icon }}</mat-icon>
+            }
+            {{ x.m }}
+          </button>
+        }
+      </div>
+      @if (ctx.err('modes'); as e) {
+        <div class="clm-card-error">{{ e }}</div>
+      }
+    </div>
+  }
+</mat-card>

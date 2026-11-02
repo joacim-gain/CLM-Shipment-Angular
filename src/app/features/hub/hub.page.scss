@@ -1,0 +1,123 @@
+/* Prototype app.css → hub, .hub-toolbar, .dd-btn, .add-wp-bar. The hub fills the viewport; its views scroll inside. */
+:host {
+  display: block;
+  height: 100%;
+}
+.hub {
+  height: 100%;
+  min-height: 0;
+  padding-bottom: 16px;
+}
+.search {
+  width: 300px;
+}
+@media (max-width: 1280px) {
+  .search {
+    width: 240px;
+  }
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+.toolbar .right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lbl-inline {
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+}
+.dd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px 7px 12px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  background: #fff;
+  font:
+    500 14px/normal Roboto,
+    sans-serif;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+.dd-btn:hover,
+.dd-btn[aria-expanded='true'] {
+  background: var(--color-action-outline-hover);
+}
+.dd-btn mat-icon {
+  color: var(--color-icon-default);
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+.props {
+  --mat-icon-button-icon-color: var(--color-icon-default);
+}
+.props.active {
+  --mat-icon-button-icon-color: var(--color-olive-600);
+  background: var(--color-surface-selected);
+}
+.hub-body {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+.hub-col {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hub-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+.add-wp-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 56px;
+  width: 100%;
+  border: 1.5px dashed var(--color-raisin-100);
+  border-radius: var(--radius-large);
+  background: var(--color-surface-subtle);
+  color: var(--color-olive-600);
+  font:
+    700 14px/normal Roboto,
+    sans-serif;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.add-wp-bar mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  color: var(--color-action-primary);
+}
+.add-wp-bar:hover {
+  background: var(--color-action-outline-hover);
+  border-color: var(--color-olive-200);
+}

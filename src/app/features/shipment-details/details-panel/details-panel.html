@@ -1,0 +1,169 @@
+@let s = shipment();
+
+<div class="rp-head">
+  <h3>Details</h3>
+  <div class="rp-name">{{ s.name }}</div>
+
+  <!-- Split status button (CLM Figma 38326:78434): status on the left, menu arrow on the right -->
+  <div class="status-btn" [class.dark-text]="darkText()">
+    <div class="sb-main" [style.background]="status().color">
+      <mat-icon [svgIcon]="'clm:' + status().icon" />{{ status().label }}
+    </div>
+    <button
+      class="sb-dd"
+      [style.background]="status().color"
+      [disabled]="!next().length"
+      [matTooltip]="next().length ? 'Change status' : ''"
+      aria-label="Change status"
+      (click)="menuTrigger.openMenu()"
+    >
+      <mat-icon>expand_more</mat-icon>
+    </button>
+    <!-- Invisible full-width anchor, so the menu opens under the whole button like the prototype -->
+    <span
+      class="sb-anchor"
+      [matMenuTriggerFor]="statusMenuRef"
+      #menuTrigger="matMenuTrigger"
+    ></span>
+  </div>
+  <mat-menu #statusMenuRef="matMenu" class="clm-status-menu" [overlapTrigger]="false">
+    @for (n of next(); track n) {
+      <button mat-menu-item [class.neg]="isNegative(n)" (click)="actions.changeStatus(s, n)">
+        <mat-icon [svgIcon]="'clm:' + statusMenu[n].icon" />{{ statusMenu[n].label }}
+      </button>
+    }
+  </mat-menu>
+</div>
+
+<div class="rp-body">
+  <section>
+    <h4>Shipment Information</h4>
+    <dl class="clm-kv">
+      <dt>Shipment No</dt>
+      <dd>{{ s.no }}</dd>
+      <dt>Shipment Date</dt>
+      <dd>{{ info().date }}</dd>
+      <dt>Working Package</dt>
+      <dd>
+        @if (wp(); as w) {
+          <a [routerLink]="['/group', 'wp', w.id]">{{ w.trade }} · {{ w.title }}</a>
+        } @else {
+          —
+        }
+      </dd>
+      <dt>Vehicle</dt>
+      <dd>{{ info().vehicle }}</dd>
+      <dt>Unloading Point</dt>
+      <dd>{{ info().unloading }}</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h4>Equipment and Usage</h4>
+    <dl class="clm-kv">
+      <div class="sub">Logistic equipment</div>
+      @for (e of onsite(); track e.id) {
+        <dt>Name</dt>
+        <dd>{{ e.name }}</dd>
+        <dt>Usage</dt>
+        <dd>{{ e.pulls }} pull{{ e.pulls > 1 ? 's' : '' }}</dd>
+        <dt>Duration</dt>
+        <dd>{{ e.start }} – {{ e.end }}</dd>
+      } @empty {
+        <dt>Name</dt>
+        <dd class="na">Not added</dd>
+      }
+      <div class="sub">Special equipment</div>
+      @for (e of booked(); track e.id) {
+        <dt>Name</dt>
+        <dd>{{ e.name }}</dd>
+        <dt>Duration</dt>
+        <dd>{{ e.start }} – {{ e.end }}</dd>
+        <dt>Planned Usage</dt>
+        <dd>{{ e.slot }} minutes</dd>
+        <dt>Estimated Cost</dt>
+        <dd>Free of charge</dd>
+      } @empty {
+        <dt>Name</dt>
+        <dd class="na">Not added</dd>
+      }
+    </dl>
+  </section>
+
+  <section>
+    <h4>Destination</h4>
+    <dl class="clm-kv">
+      <dt>Team</dt>
+      <dd [class.na]="!s.recipient">{{ s.recipient || 'Not added' }}</dd>
+      <dt>Building</dt>
+      <dd [class.na]="!s.building">{{ s.building || 'Not added' }}</dd>
+      <dt>Floor</dt>
+      <dd [class.na]="!s.floor">{{ s.floor || 'Not added' }}</dd>
+      <dt>Zone</dt>
+      <dd [class.na]="!s.zone">{{ s.zone || 'Not added' }}</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h4>Sender</h4>
+    <dl class="clm-kv">
+      <dt>Team</dt>
+      <dd [class.na]="!s.sender">{{ s.sender || 'Not added' }}</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h4>Materials</h4>
+    @for (m of materials(); track $index) {
+      <div class="clm-overline">{{ m.name }}</div>
+      <dl class="clm-kv">
+        <dt>Quantity</dt>
+        <dd>{{ m.qty }}</dd>
+      </dl>
+    }
+  </section>
+
+  <section>
+    <h4>Sustainability</h4>
+    <dl class="clm-kv">
+      <dt>Address</dt>
+      <dd [class.na]="!s.origin">{{ s.origin || 'Not added' }}</dd>
+      <dt>Distance</dt>
+      <dd [class.na]="!s.km">{{ s.km ? s.km + ' km' : 'Not added' }}</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h4>Responsible Person</h4>
+    @for (c of contacts(); track c.role) {
+      <div class="contact">
+        <div class="clm-overline">{{ c.role }}</div>
+        <div class="person">
+          <span class="av"><mat-icon>person</mat-icon></span>
+          <div>
+            <b>{{ c.person.name }}</b>
+            <div class="clm-cap">{{ c.person.phone }}</div>
+            <div class="clm-cap">{{ c.person.email }}</div>
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+</div>
+
+<div class="rp-foot">
+  <button mat-flat-button class="manage" [matMenuTriggerFor]="manageMenu">Manage</button>
+  <mat-menu #manageMenu="matMenu" xPosition="before" class="clm-manage-menu">
+    <button mat-menu-item [disabled]="locked()" (click)="actions.edit(s)">
+      <mat-icon>edit</mat-icon>Edit shipment
+    </button>
+    <button mat-menu-item (click)="actions.duplicate(s)">
+      <mat-icon>content_copy</mat-icon>Duplicate shipment
+    </button>
+    <button mat-menu-item (click)="actions.print()"><mat-icon>print</mat-icon>Print</button>
+    <mat-divider />
+    <button mat-menu-item class="clm-danger" [disabled]="locked()" (click)="actions.cancel(s)">
+      <mat-icon>block</mat-icon>Cancel shipment
+    </button>
+  </mat-menu>
+</div>

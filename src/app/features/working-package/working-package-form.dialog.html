@@ -1,0 +1,209 @@
+<div class="wp-head">
+  <div class="wp-head-text">
+    <h2 mat-dialog-title>{{ isEdit ? 'Edit working package' : 'Create working package' }}</h2>
+    <p class="wp-sub">{{ subtitle }}</p>
+  </div>
+  <button mat-icon-button mat-dialog-close aria-label="Close"><mat-icon>close</mat-icon></button>
+</div>
+
+<mat-dialog-content>
+  <form id="wpForm" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="section-label">General</div>
+    <div class="grid3">
+      <div class="field span2">
+        <label for="wp-title">Title *</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            id="wp-title"
+            formControlName="title"
+            cdkFocusInitial
+            maxlength="80"
+            placeholder="e.g. Kanäle U46 Montage"
+          />
+          <mat-error>Title is required</mat-error>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <span class="clm-label" id="wp-trade-l">Trade</span>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select
+            formControlName="trade"
+            placeholder="Select trade"
+            aria-labelledby="wp-trade-l"
+          >
+            @for (t of options.TRADES; track t) {
+              <mat-option [value]="t">{{ t }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <span class="clm-label" id="wp-sender-l">Sender *</span>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select formControlName="sender" placeholder="Select" aria-labelledby="wp-sender-l">
+            @for (o of options.ORGS; track o) {
+              <mat-option [value]="o">{{ o }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Sender is required</mat-error>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <span class="clm-label" id="wp-recipient-l">Recipient *</span>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select
+            formControlName="recipient"
+            placeholder="Select"
+            aria-labelledby="wp-recipient-l"
+          >
+            @for (o of options.ORGS; track o) {
+              <mat-option [value]="o">{{ o }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Recipient is required</mat-error>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <label for="wp-volume">Volume</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput id="wp-volume" formControlName="volume" placeholder="e.g. 420 m³" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="section-label">Destination</div>
+    <div class="grid3">
+      <div class="field">
+        <span class="clm-label" id="wp-building-l">Building *</span>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select
+            formControlName="building"
+            placeholder="Select"
+            aria-labelledby="wp-building-l"
+          >
+            @for (b of options.BUILDINGS; track b) {
+              <mat-option [value]="b">{{ b }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Building is required</mat-error>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <span class="clm-label" id="wp-floor-l">Floor *</span>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select formControlName="floor" placeholder="Select" aria-labelledby="wp-floor-l">
+            @for (f of options.FLOORS; track f) {
+              <mat-option [value]="f">{{ f }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Floor is required</mat-error>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <span class="clm-label" id="wp-zone-l">Zone</span>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select formControlName="zone" placeholder="Select zone" aria-labelledby="wp-zone-l">
+            @for (z of options.ZONES; track z) {
+              <mat-option [value]="z">{{ z }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="section-label">Booking window</div>
+    <div class="grid3">
+      <div class="field">
+        <label for="wp-from">Date from *</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            id="wp-from"
+            formControlName="from"
+            [matDatepicker]="fromPicker"
+            [min]="minDate"
+            [max]="maxDate"
+            placeholder="dd.mm.yyyy"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="fromPicker" />
+          <mat-datepicker #fromPicker [calendarHeaderComponent]="calendarHeader" />
+          <mat-error>
+            @if (form.controls.from.hasError('matDatepickerParse')) {
+              Enter a date as dd.mm.yyyy
+            } @else if (
+              form.controls.from.hasError('matDatepickerMin') ||
+              form.controls.from.hasError('matDatepickerMax')
+            ) {
+              Date must be between 01.01.2026 and 31.12.2027
+            } @else {
+              Start date is required
+            }
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <label for="wp-to">Date to *</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input
+            matInput
+            id="wp-to"
+            formControlName="to"
+            [matDatepicker]="toPicker"
+            [errorStateMatcher]="dateToMatcher"
+            [min]="form.controls.from.value ?? minDate"
+            [max]="maxDate"
+            placeholder="dd.mm.yyyy"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="toPicker" />
+          <mat-datepicker #toPicker [calendarHeaderComponent]="calendarHeader" />
+          <mat-error>
+            @if (form.controls.to.hasError('matDatepickerParse')) {
+              Enter a date as dd.mm.yyyy
+            } @else if (form.controls.to.hasError('required')) {
+              End date is required
+            } @else if (form.controls.to.hasError('matDatepickerMax')) {
+              Date must be between 01.01.2026 and 31.12.2027
+            } @else {
+              “Date to” must be after “Date from”
+            }
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="field">
+        <label for="wp-qty">Estimated transport units</label>
+        <div class="units">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qty">
+            <input
+              matInput
+              id="wp-qty"
+              type="number"
+              min="0"
+              formControlName="unitsQty"
+              placeholder="Qty"
+            />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-select formControlName="units" placeholder="Unit" aria-label="Transport unit">
+              @for (u of options.TRANSPORT_UNITS; track u) {
+                <mat-option [value]="u">{{ u }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  @if (!isEdit) {
+    <button mat-button type="button" class="left" (click)="uploadInstead()">
+      <mat-icon>upload_file</mat-icon>Upload Excel instead
+    </button>
+  }
+  <button mat-button type="button" mat-dialog-close>Cancel</button>
+  <button mat-flat-button type="submit" form="wpForm">
+    {{ isEdit ? 'Save changes' : 'Create working package' }}
+  </button>
+</mat-dialog-actions>

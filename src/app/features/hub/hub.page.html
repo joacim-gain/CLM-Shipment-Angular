@@ -1,0 +1,136 @@
+@let p = prefs();
+<div class="clm-page hub">
+  <div class="clm-sticky-head">
+    <div class="clm-page-head">
+      <h1>Shipments</h1>
+      <span class="clm-sp"></span>
+      <mat-form-field
+        appearance="outline"
+        subscriptSizing="dynamic"
+        class="search clm-search clm-search-lg"
+      >
+        <mat-icon matPrefix>search</mat-icon>
+        <input
+          #search
+          matInput
+          placeholder="Search packages and shipments"
+          [value]="p.search"
+          (input)="onSearch(search.value)"
+          autocomplete="off"
+          aria-label="Search packages and shipments"
+        />
+        @if (p.search) {
+          <button
+            matSuffix
+            mat-icon-button
+            class="clm-icon-btn-sm"
+            matTooltip="Clear search"
+            aria-label="Clear search"
+            (click)="clearSearch(search)"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+      <button mat-flat-button (click)="createShipment()"><mat-icon>add</mat-icon>Shipment</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="clm-chips">
+      <clm-check-chip
+        label="All"
+        [count]="counts().all"
+        tone="olive"
+        [checked]="!p.wpStatus.length"
+        (pressed)="toggleChip(null)"
+      />
+      @for (c of chips; track c.key) {
+        <clm-check-chip
+          [label]="wpStatus[c.key].label"
+          [count]="counts()[c.key]"
+          [tone]="c.tone"
+          [icon]="c.icon"
+          [checked]="p.wpStatus.includes(c.key)"
+          (pressed)="toggleChip(c.key)"
+        />
+      }
+    </div>
+    <clm-hub-legend />
+    <div class="right">
+      <span class="lbl-inline">Group by</span>
+      <button class="dd-btn" [matMenuTriggerFor]="groupMenu">
+        <span>{{ groupLabel[p.groupBy] }}</span
+        ><mat-icon>expand_more</mat-icon>
+      </button>
+      <mat-menu #groupMenu="matMenu" class="clm-menu-wide">
+        @for (g of groupOptions; track g) {
+          <button mat-menu-item [class.clm-on]="p.groupBy === g" (click)="setGroupBy(g)">
+            <mat-icon>{{ groupIcon[g] }}</mat-icon
+            ><span>{{ groupLabel[g] }}</span>
+            @if (p.groupBy === g) {
+              <mat-icon class="clm-menu-check">check</mat-icon>
+            }
+          </button>
+        }
+      </mat-menu>
+      <clm-view-switch [options]="views()" [value]="p.view" (valueChange)="setView($event)" />
+      <button
+        mat-icon-button
+        class="props"
+        [class.active]="p.panel"
+        matTooltip="Properties"
+        aria-label="Properties"
+        (click)="togglePanel()"
+      >
+        <mat-icon>settings</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="hub-body">
+    <div class="hub-col">
+      <div class="hub-main">
+        @switch (p.view) {
+          @case ('timeline') {
+            <clm-hub-timeline
+              [groups]="groups()"
+              [showAll]="showAll()"
+              (toggleShowAll)="toggleShowAll($event)"
+              (openGroup)="openGroup($event)"
+              (openShipment)="openShipment($event)"
+              (addShipment)="createShipment($event)"
+              (resetFilters)="resetFilters()"
+            />
+          }
+          @case ('cards') {
+            <clm-hub-cards
+              [groups]="groups()"
+              (openGroup)="openGroup($event)"
+              (resetFilters)="resetFilters()"
+            />
+          }
+          @default {
+            <clm-hub-list
+              [groups]="groups()"
+              [showAll]="showAll()"
+              (toggleShowAll)="toggleShowAll($event)"
+              (openGroup)="openGroup($event)"
+              (openShipment)="openShipment($event)"
+              (addShipment)="createShipment($event)"
+              (resetFilters)="resetFilters()"
+            />
+          }
+        }
+      </div>
+      @if (p.groupBy === 'wp') {
+        <button class="add-wp-bar" (click)="addWorkingPackage()">
+          <mat-icon>add_circle</mat-icon>Working package
+        </button>
+      }
+    </div>
+    @if (p.panel) {
+      <clm-hub-properties />
+    }
+  </div>
+</div>

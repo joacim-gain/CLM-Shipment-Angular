@@ -1,0 +1,108 @@
+/* Layout only. Colours, radius, control height and type come from the Amlog theme
+   (src/styles/_amlog-theme.scss), so this file stays plain CSS.
+   Values mirror the prototype: app.css → .dlg-h, .dlg-b, .dlg-f, .field, .grid3, .section-label */
+:host {
+  display: block;
+}
+
+.wp-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px 12px 0 24px;
+}
+.wp-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.wp-head button {
+  margin-top: -6px;
+}
+.wp-head [mat-dialog-title] {
+  padding: 0;
+  margin: 0;
+  font-size: 20px;
+  line-height: normal;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+}
+.wp-head [mat-dialog-title]::before {
+  display: none;
+}
+.wp-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+mat-dialog-content.mat-mdc-dialog-content {
+  padding: 12px 24px 0;
+  max-height: none;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* No extra margin: the form's 4px gap is the only spacing, as in the prototype */
+.section-label {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.span2 {
+  grid-column: span 2;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.field > label,
+.field > .clm-label {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  color: var(--mat-sys-on-surface-variant);
+}
+.field mat-form-field {
+  width: 100%;
+}
+.units {
+  display: flex;
+  gap: 6px;
+}
+.units .qty {
+  flex: none;
+  width: 72px;
+}
+
+mat-dialog-actions.mat-mdc-dialog-actions {
+  padding: 24px;
+  gap: 8px;
+  justify-content: flex-end;
+}
+mat-dialog-actions .left {
+  margin-right: auto;
+}
+
+@media (max-width: 640px) {
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+  .span2 {
+    grid-column: auto;
+  }
+}

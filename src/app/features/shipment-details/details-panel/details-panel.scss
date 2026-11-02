@@ -1,0 +1,158 @@
+/* Prototype app.css → .rpanel, .rp-head, .rp-body, .rp-sec, .rp-foot, .status-btn, .contact
+   --clm-shell-top: height of the app's top bar (64px in CLM).
+   --clm-panel-top: set by the page — sticky header height + 24px. */
+:host {
+  position: sticky;
+  top: var(--clm-panel-top, 24px);
+  height: calc(100vh - var(--clm-shell-top, 64px) - var(--clm-panel-top, 24px) - 24px);
+  min-height: 360px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.14);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.rp-head {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid #dcdcdd;
+  flex: none;
+}
+h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  line-height: normal;
+}
+.rp-name {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  line-height: normal;
+}
+
+.rp-body {
+  padding: 16px 16px 24px;
+  overflow: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+section + section {
+  border-top: 1px solid #dcdcdd;
+  padding-top: 16px;
+}
+h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  line-height: normal;
+}
+dd a {
+  color: #7c7900;
+  text-decoration: none;
+}
+
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.contact + .contact {
+  margin-top: 4px;
+}
+.person {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.av {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: #efefd8;
+  display: grid;
+  place-items: center;
+  color: #7c7900;
+  flex: none;
+}
+.person b {
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  display: block;
+}
+
+.rp-foot {
+  padding: 12px 16px 16px;
+  border-top: 1px solid #dcdcdd;
+  flex: none;
+}
+.manage {
+  width: 100%;
+}
+
+/* Status button */
+.status-btn {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  gap: 1px;
+}
+.sb-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.sb-main mat-icon {
+  width: 20px;
+  height: 20px;
+}
+.sb-dd {
+  width: 40px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  filter: brightness(0.82);
+}
+.sb-dd:hover:not(:disabled) {
+  filter: brightness(0.72);
+}
+.sb-dd:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dark-text .sb-main,
+.dark-text .sb-dd {
+  color: rgba(0, 0, 0, 0.8);
+}
+.sb-anchor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  pointer-events: none;
+}

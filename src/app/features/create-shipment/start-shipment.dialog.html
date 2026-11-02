@@ -1,0 +1,84 @@
+<div class="clm-dlg-head">
+  <div class="grow"><h2 mat-dialog-title>How would you like to start?</h2></div>
+  <button mat-icon-button mat-dialog-close aria-label="Close"><mat-icon>close</mat-icon></button>
+</div>
+<mat-dialog-content>
+  @if (saved(); as d) {
+    <div class="clm-banner info draft">
+      <mat-icon>edit_document</mat-icon>
+      <div class="grow">
+        <b>Continue your draft?</b>
+        <p>
+          {{ d.name || 'Untitled shipment' }} · step {{ d.step }} of 6 · {{ steps[d.step - 1] }}
+        </p>
+      </div>
+      <button mat-button class="clm-btn-sm" (click)="discardDraft()">Discard</button>
+      <button mat-flat-button class="clm-btn-sm" (click)="continueDraft(d)">Continue draft</button>
+    </div>
+  }
+  <div class="hs-new">
+    <span class="hs-plus"><mat-icon>add</mat-icon></span>
+    <div class="grow">
+      <b>Start from scratch</b>
+      <p>Create a new shipment step by step. You pick the working package in the first step.</p>
+    </div>
+    <button mat-flat-button (click)="startNew()">Create new</button>
+  </div>
+  <div class="hs-hist">
+    <div class="hs-h">
+      <b>Start from a previous shipment</b>
+      <p>
+        Copy the details of a shipment you or your team created. You pick a new date and time slot.
+      </p>
+    </div>
+    <div class="hs-pills">
+      @for (k of sourceKeys; track k) {
+        <clm-check-chip
+          [label]="sources()[k].label"
+          tone="olive"
+          [checked]="source() === k"
+          (pressed)="pick(k)"
+        />
+      }
+    </div>
+    @if (cards().length) {
+      <div class="hcards">
+        @for (s of cards(); track s.id) {
+          @let by = person(s.createdBy);
+          <div class="hcard">
+            <b class="hc-n clm-ell" [matTooltip]="s.name">{{ s.name }}</b>
+            <div class="hc-b">
+              <div>
+                <mat-icon>location_on</mat-icon><span>Unloading point</span><em>{{ s.up }}</em>
+              </div>
+              <div>
+                <mat-icon>apartment</mat-icon><span>Building</span><em>{{ s.building }}</em>
+              </div>
+              <div>
+                <mat-icon>layers</mat-icon><span>Floor</span><em>{{ s.floor }}</em>
+              </div>
+            </div>
+            <div class="hc-by">
+              <span class="clm-avatar sm">{{ by.name | clmInitials }}</span
+              ><span class="grow"
+                ><b class="clm-ell">{{ by.name }}</b
+                ><small>Created {{ s.created | clmDate }}</small></span
+              >
+            </div>
+            <button class="hc-dup" (click)="copy(s)">
+              <mat-icon>content_copy</mat-icon>Duplicate
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="clm-cap">No shipments yet</div>
+    }
+    @if (current().list.length > 3) {
+      <button class="hs-all" (click)="all.set(!all())">
+        {{ all() ? 'Show less' : seeAllLabel() }}
+      </button>
+    }
+  </div>
+</mat-dialog-content>
+<div class="end"></div>

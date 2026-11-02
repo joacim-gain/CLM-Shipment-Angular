@@ -1,0 +1,157 @@
+/* Prototype app.css → .glist, .grow-row, .srow, .caret, .show-all */
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+.glist {
+  background: #fff;
+  border-radius: var(--radius-large);
+  box-shadow: var(--elevation-card);
+  overflow: hidden;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.glist-head,
+.grow-row,
+.srow {
+  display: grid;
+  align-items: center;
+}
+.glist-head {
+  background: var(--color-surface-subtle);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-default);
+}
+.glist-head > span {
+  padding: 10px 8px 10px 16px;
+}
+.grow-row {
+  border-bottom: 1px solid var(--color-border-default);
+  position: relative;
+  cursor: pointer;
+  background: #fff;
+}
+.grow-row > * {
+  padding: 9px 8px 9px 16px;
+  min-width: 0;
+}
+.grow-row > .caret {
+  padding: 0;
+}
+.grow-row:hover {
+  background: var(--color-action-outline-hover);
+}
+.trade-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  padding: 0 !important;
+}
+.caret {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--color-icon-default);
+  margin-left: 8px;
+  transition:
+    transform 0.15s,
+    background 0.12s;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.caret:hover {
+  background: var(--color-surface-selected);
+  color: var(--color-olive-600);
+}
+.caret.open {
+  transform: rotate(90deg);
+}
+.min0 {
+  min-width: 0;
+}
+.g-title {
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.g-title .t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.g-title .go {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--color-olive-600);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.grow-row:hover .g-title .go {
+  opacity: 1;
+}
+.g-sub {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  font-weight: 400;
+}
+.wp-st {
+  gap: 6px;
+}
+.ships {
+  background: var(--color-surface-page);
+  border-bottom: 1px solid var(--color-border-default);
+}
+.srow {
+  border-top: 1px solid var(--color-border-default);
+  cursor: pointer;
+  font-size: 14px;
+}
+.srow > * {
+  padding: 8px 8px 8px 16px;
+  min-width: 0;
+}
+.srow:first-child {
+  border-top: 0;
+}
+.srow:hover {
+  background: var(--color-action-outline-hover);
+}
+.grow-row:focus-visible,
+.srow:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}
+.s-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.strong {
+  font-weight: 500;
+}
+.show-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 12px 60px;
+  font-size: 14px;
+}

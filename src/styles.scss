@@ -1,0 +1,10 @@
+// Global styles: Amlog DS tokens, Material theme, CLM patterns.
+// Component styles live next to each component; only shared patterns are global.
+@use './styles/clm-base';
+@use './styles/amlog-theme';
+@use './styles/amlog-material-sizing';
+@use './styles/clm-patterns';
+
+html {
+  @include amlog-theme.apply();
+}

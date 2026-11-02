@@ -1,0 +1,103 @@
+/* Prototype app.css → .flow-head, DS Navigation/Stepper */
+.flow-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 50px;
+  padding-top: 4px;
+}
+.flow-head h1 {
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.15px;
+}
+.stepper-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 84px;
+}
+.stepper {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 96px;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+}
+.step .bub {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  border: 1px solid var(--color-surface-selected);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--color-olive-600);
+  background: #fff;
+  transition: box-shadow 0.12s;
+}
+.step .bub mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+.step .lab {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.step.done .bub {
+  background: var(--color-icon-action);
+  border-color: var(--color-icon-action);
+  color: #fff;
+}
+.step.cur .bub {
+  border: 2px solid var(--color-action-primary);
+}
+.step.cur .lab {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  line-height: normal;
+}
+.step.locked {
+  cursor: not-allowed;
+}
+.step:not(.locked):not(.cur):hover .bub {
+  box-shadow: 0 0 0 4px var(--color-action-outline-hover);
+}
+.step:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.step-line {
+  width: 40px;
+  height: 2px;
+  background: var(--color-border-default);
+  margin-top: 15px;
+  flex: none;
+}
+.step-line.done {
+  background: var(--color-icon-action);
+}
+.foot {
+  margin-top: 16px;
+}

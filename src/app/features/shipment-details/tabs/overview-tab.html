@@ -1,0 +1,210 @@
+@let s = shipment();
+
+@if (s.justCreated) {
+  <div class="clm-banner ok" role="status">
+    <mat-icon>check_circle</mat-icon>
+    <div>
+      <b>Shipment created</b>
+      <p>
+        {{
+          s.status === 'Open'
+            ? 'It is waiting for approval by the site logistics team. You’ll be notified when it’s approved.'
+            : 'It is approved and visible to the site team.'
+        }}
+      </p>
+    </div>
+    <button
+      mat-icon-button
+      class="x clm-icon-btn-sm"
+      (click)="data.dismissCreatedBanner(s.id)"
+      aria-label="Dismiss"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+}
+@if (s.status === 'Canceled' || s.status === 'Rejected') {
+  <div class="clm-banner err" role="status">
+    <mat-icon>block</mat-icon>
+    <div>
+      <b>{{ s.status === 'Canceled' ? 'Shipment canceled' : 'Shipment rejected' }}</b>
+      <p>{{ s.reason || 'No reason given.' }}</p>
+    </div>
+  </div>
+}
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow"><mat-card-title>Booking</mat-card-title></div>
+  </div>
+  <div class="tiles">
+    <div class="tile">
+      <mat-icon>event</mat-icon>
+      <div>
+        <div class="clm-overline">Date</div>
+        <b>{{ s.date | clmDate: 'day' }}</b>
+      </div>
+    </div>
+    <div class="tile">
+      <mat-icon>schedule</mat-icon>
+      <div>
+        <div class="clm-overline">Time slot</div>
+        <b>{{ s.start }} – {{ s.end }}</b>
+      </div>
+    </div>
+    <div class="tile">
+      <mat-icon>location_on</mat-icon>
+      <div>
+        <div class="clm-overline">Unloading point</div>
+        <b [matTooltip]="s.up + ' · ' + s.zone">{{ s.up }} · {{ s.zone }}</b>
+      </div>
+    </div>
+    <div class="tile">
+      <mat-icon>local_shipping</mat-icon>
+      <div>
+        <div class="clm-overline">Vehicle</div>
+        <b [matTooltip]="vehicle().name">{{ vehicle().name }} · {{ s.vehicles || 1 }}</b>
+      </div>
+    </div>
+  </div>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow"><mat-card-title>Weather</mat-card-title></div>
+    <span class="clm-cap">{{ s.date | clmDate: 'day' }} · {{ s.building }}</span>
+  </div>
+  <div class="weather-row">
+    @for (w of weather(); track w.hour) {
+      <div class="wh" [class.in]="w.inSlot" [matTooltip]="w.label + ' · ' + w.temp + '°'">
+        <span class="clm-cap">{{ w.label }}</span>
+        <img [src]="'fig/w-' + w.icon + '.svg'" width="24" height="24" alt="" />
+        <span>{{ w.temp }}°</span>
+      </div>
+    }
+  </div>
+  <div class="clm-cap info">
+    <mat-icon>info</mat-icon>
+    Highlighted hours are your time slot ·
+    {{ rainAt() ? 'rain expected from ' + rainAt() : 'no rain expected' }}.
+  </div>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Materials ({{ s.materials.length }})</mat-card-title>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table mat-table [dataSource]="materials()">
+      <ng-container matColumnDef="name"
+        ><th mat-header-cell *matHeaderCellDef>Material</th>
+        <td mat-cell *matCellDef="let m" class="strong">{{ m.name }}</td></ng-container
+      >
+      <ng-container matColumnDef="qty"
+        ><th mat-header-cell *matHeaderCellDef>Quantity</th>
+        <td mat-cell *matCellDef="let m">{{ m.qty }}</td></ng-container
+      >
+      <ng-container matColumnDef="pack"
+        ><th mat-header-cell *matHeaderCellDef>Packaging</th>
+        <td mat-cell *matCellDef="let m">{{ m.pack }}</td></ng-container
+      >
+      <ng-container matColumnDef="note"
+        ><th mat-header-cell *matHeaderCellDef>Note</th>
+        <td mat-cell *matCellDef="let m" class="clm-muted">{{ m.note }}</td></ng-container
+      >
+      <tr mat-header-row *matHeaderRowDef="materialColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: materialColumns"></tr>
+    </table>
+  </div>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Equipment ({{ s.equipment.length }})</mat-card-title>
+    </div>
+  </div>
+  @for (e of s.equipment; track e.id) {
+    @let eq = data.equipment(e.id);
+    @let pill = equipmentPill(e);
+    <div class="eq-row">
+      <mat-icon class="eq-icon" [svgIcon]="'clm:' + eq.icon" />
+      <div class="grow">
+        <div class="clm-overline">
+          {{ e.kind === 'onsite' ? 'On site (non-bookable)' : 'Booked' }}
+        </div>
+        <b>{{ eq.name }}</b>
+        <div class="clm-cap">
+          @if (e.kind === 'onsite') {
+            {{ e.pulls || 1 }} pulls · {{ e.start }} – {{ e.end }}
+          } @else {
+            {{ e.start }} – {{ e.end }} · {{ eq.slot || 20 }} minutes · free of charge
+          }
+        </div>
+      </div>
+      <span class="clm-pill" [class]="pill.tone">{{ pill.label }}</span>
+    </div>
+  } @empty {
+    <div class="clm-cap">No equipment booked for this shipment.</div>
+  }
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow"><mat-card-title>Transport &amp; sustainability</mat-card-title></div>
+  </div>
+  <dl class="clm-kv kv4">
+    <dt>Arrival gate</dt>
+    <dd>{{ s.gate }}</dd>
+    <dt>License plate</dt>
+    <dd>{{ s.plate || '—' }}</dd>
+    <dt>Driver phone</dt>
+    <dd>{{ s.phone || '—' }}</dd>
+    <dt>Transport modes</dt>
+    <dd>{{ (s.modes || ['Truck']).join(', ') }}</dd>
+    <dt>Origin</dt>
+    <dd>{{ s.origin }}</dd>
+    <dt>Distance</dt>
+    <dd>{{ s.km }} km · ≈ {{ (s.km * 0.9).toFixed(1) }} kg CO₂</dd>
+  </dl>
+</mat-card>
+
+<mat-card appearance="raised" class="clm-card">
+  <div class="clm-card-head">
+    <div class="grow">
+      <mat-card-title>Comments ({{ s.comments.length }})</mat-card-title>
+    </div>
+  </div>
+  @for (c of comments(); track $index) {
+    <div class="cmt">
+      <span class="clm-avatar">{{ initials(c.person.name) }}</span>
+      <div class="grow">
+        <div class="clm-cap">{{ c.person.name }} · {{ c.at | clmDate: 'time' }}</div>
+        <div>{{ c.text }}</div>
+      </div>
+    </div>
+  } @empty {
+    <div class="clm-cap">No comments yet.</div>
+  }
+  <div class="clm-field add-comment">
+    <label for="c-text">Add a comment</label>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <textarea
+        matInput
+        id="c-text"
+        [formControl]="comment"
+        maxlength="250"
+        placeholder="Write here"
+        (keydown)="onCommentKey($event)"
+      ></textarea>
+    </mat-form-field>
+    <div class="post-row">
+      <span class="counter">{{ comment.value.length }}/250</span>
+      <button mat-flat-button [disabled]="!comment.value.trim()" (click)="postComment()">
+        <mat-icon>send</mat-icon>Post
+      </button>
+    </div>
+  </div>
+</mat-card>

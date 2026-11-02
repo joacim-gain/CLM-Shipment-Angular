@@ -1,0 +1,1 @@
+import{na as v}from"./chunk-BT_UvFLf.js";var n=Symbol(`FIELD_TREE`);function se(e){return typeof e==`function`&&e[n]===!0}var oe=new v(``);export{se as n,oe as t};

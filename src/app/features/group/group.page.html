@@ -1,0 +1,241 @@
+@if (notFound()) {
+  <div class="clm-page">
+    <div class="clm-na-page">
+      <mat-icon>folder_off</mat-icon>
+      <h2>Working package not found</h2>
+      <button mat-stroked-button (click)="back()">Back to Shipments</button>
+    </div>
+  </div>
+} @else {
+  <div class="clm-page">
+    <div class="clm-sticky-head gh">
+      <div class="gh-top">
+        <button
+          mat-icon-button
+          class="clm-back"
+          matTooltip="Back"
+          aria-label="Back"
+          (click)="back()"
+        >
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <mat-icon class="gh-ic" [style.color]="accent()">{{ icon() }}</mat-icon>
+        <h1 class="clm-ell">{{ wp()?.title ?? key() }}</h1>
+        @if (status(); as st) {
+          <clm-wp-pill [status]="st" />
+        } @else {
+          <span class="clm-pill">{{ groupLabel() }}</span>
+        }
+        <span class="clm-sp"></span>
+        @if (wp()) {
+          <button mat-button (click)="edit()"><mat-icon>edit</mat-icon>Edit</button>
+        }
+        @if (canAdd()) {
+          <button mat-flat-button (click)="addShipment()"><mat-icon>add</mat-icon>Shipment</button>
+        }
+      </div>
+      <div class="gh-grid">
+        @for (f of facts(); track f.label) {
+          <div class="gh-kv">
+            <span>{{ f.label }}</span
+            ><b [title]="f.value">{{ f.value }}</b>
+          </div>
+        }
+      </div>
+      <div class="gh-prog">
+        <div class="clm-progress"><i [style.width.%]="pct()"></i></div>
+        <span>{{ done() }} of {{ all().length }} shipments completed</span>
+      </div>
+      <div class="gh-bar">
+        <span class="gh-lbl">Shipments</span>
+        <div class="clm-chips">
+          <clm-check-chip
+            label="All"
+            [count]="all().length"
+            tone="olive"
+            [checked]="!on().length"
+            (pressed)="toggleBucket(null)"
+          />
+          @for (b of shownBuckets(); track b.k) {
+            <clm-check-chip
+              [label]="b.label"
+              [count]="counts()[b.k]"
+              [tone]="b.tone"
+              [icon]="b.icon"
+              [checked]="on().includes(b.k)"
+              (pressed)="toggleBucket(b.k)"
+            />
+          }
+        </div>
+        <span class="clm-sp"></span>
+        <clm-view-switch [options]="views()" [value]="view()" (valueChange)="setView($event)" />
+      </div>
+    </div>
+
+    <div class="gbody">
+      @if (!all().length) {
+        <div class="clm-empty empty-card">
+          <mat-icon>local_shipping</mat-icon>
+          <span>No shipments in this working package yet.</span>
+          @if (wp() && canAdd()) {
+            <button mat-flat-button (click)="addShipment()">
+              <mat-icon>add</mat-icon>Add shipment
+            </button>
+          }
+        </div>
+      } @else if (!filtered().length) {
+        <div class="clm-empty empty-card">
+          <mat-icon>local_shipping</mat-icon><span>No shipments match the selected status.</span>
+        </div>
+      } @else if (view() === 'cards') {
+        <div class="scards">
+          @for (s of filtered(); track s.id) {
+            @let cr = store.person(s.createdBy);
+            <div
+              class="scard"
+              tabindex="0"
+              role="button"
+              (click)="open(s)"
+              (keydown.enter)="open(s)"
+            >
+              <div class="sc-head">
+                <clm-ship-icon [status]="s.status" [size]="20" />
+                <div class="grow">
+                  <div class="clm-ell" [matTooltip]="s.name">{{ s.name }}</div>
+                  <div class="sc-no">{{ s.no }}</div>
+                </div>
+                <button
+                  mat-icon-button
+                  class="clm-icon-btn-sm sc-menu"
+                  [matMenuTriggerFor]="rowMenu"
+                  [matMenuTriggerData]="{ s }"
+                  matTooltip="Actions"
+                  aria-label="Actions"
+                  (click)="$event.stopPropagation()"
+                >
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+              </div>
+              <div class="sc-when">
+                <span [matTooltip]="dayLong(s.date)"
+                  ><mat-icon>event</mat-icon>{{ s.date | clmDate }}</span
+                ><span class="vr"></span>
+                <span><mat-icon>schedule</mat-icon>{{ s.start }} – {{ s.end }}</span>
+              </div>
+              <div class="sc-rows">
+                <div>
+                  <mat-icon>location_on</mat-icon><b>Unloading zone</b
+                  ><em>{{ s.up }} · {{ s.zone }}</em>
+                </div>
+                <div>
+                  <mat-icon>corporate_fare</mat-icon><b>Building</b><em>{{ s.building }}</em>
+                </div>
+                <div>
+                  <mat-icon>layers</mat-icon><b>Floor</b><em>{{ s.floor }}</em>
+                </div>
+              </div>
+              <div class="sc-foot">
+                <span class="clm-avatar sm">{{ cr.name | clmInitials }}</span>
+                <div class="grow">
+                  <div class="clm-cap">Created by</div>
+                  <div class="clm-ell">{{ cr.name }} · {{ s.created | clmDate: 'time' }}</div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="gtable">
+          <table class="clm-table">
+            <thead>
+              <tr>
+                @for (c of cols; track c.key) {
+                  <th>{{ c.label }}</th>
+                }
+                <th class="menu-col"></th>
+              </tr>
+              <tr class="srch">
+                @for (c of cols; track c.key) {
+                  <th>
+                    <input
+                      class="cell-search"
+                      placeholder="Search"
+                      [value]="query()[c.key] ?? ''"
+                      (input)="setQuery(c.key, $any($event.target).value)"
+                      [attr.aria-label]="'Search ' + c.label"
+                    />
+                  </th>
+                }
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of rows(); track s.id) {
+                @let cr = store.person(s.createdBy);
+                <tr class="click" (click)="open(s)">
+                  <td>
+                    <div class="clm-row name">
+                      <clm-ship-icon [status]="s.status" /><span
+                        class="clm-ell clm-tline1"
+                        [matTooltip]="s.name"
+                        [innerHTML]="s.name | clmHighlight: query()['name']"
+                      ></span>
+                    </div>
+                  </td>
+                  <td class="clm-nowrap">{{ s.date | clmDate }}</td>
+                  <td class="clm-nowrap">{{ s.start }} - {{ s.end }}</td>
+                  <td>{{ s.up }}</td>
+                  <td class="clm-nowrap">{{ s.building }}</td>
+                  <td>{{ s.floor }}</td>
+                  <td>
+                    <div class="clm-row clm-nowrap">
+                      <span class="clm-avatar sm">{{ cr.name | clmInitials }}</span
+                      >{{ cr.name }}
+                    </div>
+                  </td>
+                  <td class="clm-nowrap">{{ createdLabel(s.created) }}</td>
+                  <td class="menu-col">
+                    <button
+                      mat-icon-button
+                      class="clm-icon-btn-sm"
+                      [matMenuTriggerFor]="rowMenu"
+                      [matMenuTriggerData]="{ s }"
+                      matTooltip="Actions"
+                      aria-label="Actions"
+                      (click)="$event.stopPropagation()"
+                    >
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="9" class="clm-cap no-match">No shipments match your search.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Row actions (shared with the cards) -->
+  <mat-menu #rowMenu="matMenu" xPosition="before">
+    <ng-template matMenuContent let-s="s">
+      <button mat-menu-item (click)="open(s)"><mat-icon>open_in_new</mat-icon>Open details</button>
+      <button mat-menu-item (click)="duplicate(s)">
+        <mat-icon>content_copy</mat-icon>Duplicate
+      </button>
+      <mat-divider />
+      <button
+        mat-menu-item
+        class="clm-danger"
+        [disabled]="isLocked(s.status)"
+        (click)="actions.cancel(s)"
+      >
+        <mat-icon>block</mat-icon>Cancel shipment
+      </button>
+    </ng-template>
+  </mat-menu>
+}

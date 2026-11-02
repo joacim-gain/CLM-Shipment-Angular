@@ -1,0 +1,80 @@
+@if (shipment(); as s) {
+  <div class="sticky-head" #head>
+    <div class="page-head">
+      <button mat-icon-button class="back" (click)="back()" matTooltip="Back" aria-label="Back">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="grow">
+        <div class="title-row">
+          <h1>{{ s.name }}</h1>
+          <clm-status-pill [status]="s.status" />
+        </div>
+        <div class="meta">
+          <span><mat-icon>tag</mat-icon>{{ s.no }}</span>
+          <span
+            ><mat-icon>person</mat-icon>Created {{ s.created | clmDate: 'time' }} by
+            {{ creator().name }}</span
+          >
+          <span
+            ><mat-icon>location_on</mat-icon>{{ s.building }} · {{ s.floor }} · {{ s.zone }}</span
+          >
+          @if (workingPackage(); as wp) {
+            <span
+              ><mat-icon>folder</mat-icon
+              ><a [routerLink]="['/group', 'wp', wp.id]">{{ wp.title }}</a></span
+            >
+          }
+        </div>
+      </div>
+      <button mat-button (click)="actions.print()"><mat-icon>print</mat-icon>Print</button>
+      <span [matTooltip]="locked() ? 'Completed or canceled shipments can’t be edited' : ''">
+        <button mat-stroked-button [disabled]="locked()" (click)="actions.edit(s)">
+          <mat-icon>edit</mat-icon>Edit shipment
+        </button>
+      </span>
+    </div>
+
+    <nav
+      mat-tab-nav-bar
+      [tabPanel]="tabPanel"
+      mat-stretch-tabs="false"
+      [disableRipple]="true"
+      aria-label="Shipment sections"
+    >
+      @for (t of tabs; track t.key) {
+        <a mat-tab-link [routerLink]="['/shipment', s.id, t.key]" [active]="activeTab() === t.key">
+          {{ t.label }}
+          @if (t.key !== 'overview') {
+            <span class="clm-count">{{ counts()[t.key] }}</span>
+          }
+        </a>
+      }
+    </nav>
+  </div>
+
+  <div class="split" [style.--clm-panel-top.px]="panelTop()">
+    <mat-tab-nav-panel #tabPanel>
+      @switch (activeTab()) {
+        @case ('documents') {
+          <clm-documents-tab [shipment]="s" />
+        }
+        @case ('annotations') {
+          <clm-annotations-tab [shipment]="s" />
+        }
+        @case ('activity') {
+          <clm-activity-tab [shipment]="s" />
+        }
+        @default {
+          <clm-overview-tab [shipment]="s" />
+        }
+      }
+    </mat-tab-nav-panel>
+    <clm-details-panel [shipment]="s" />
+  </div>
+} @else {
+  <div class="not-found">
+    <mat-icon>search_off</mat-icon>
+    <h2>Shipment not found</h2>
+    <a mat-stroked-button routerLink="/shipments">Back to Shipments</a>
+  </div>
+}

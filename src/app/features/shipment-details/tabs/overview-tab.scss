@@ -1,0 +1,162 @@
+/* Prototype app.css → .tiles/.tile, .weather-row/.wh, .tbl-wrap/.table, .eq-row, .kv, .cmt, .counter */
+:host {
+  display: block;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.tile {
+  background: #f2f2f2;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.tile > div {
+  min-width: 0;
+}
+.tile mat-icon {
+  color: #7c7900;
+  flex: none;
+}
+.tile .clm-overline {
+  margin-bottom: 2px;
+}
+.tile b {
+  display: block;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weather-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+.wh {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  border-radius: 6px;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
+.wh .clm-cap {
+  font-size: 10px;
+  letter-spacing: 0.4px;
+}
+.wh.in {
+  background: #efefd8;
+}
+.info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.info mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.tbl-wrap {
+  border: 1px solid #dcdcdd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.tbl-wrap .mat-mdc-header-row {
+  background: #f2f2f2;
+}
+.tbl-wrap .mat-mdc-header-cell,
+.tbl-wrap .mat-mdc-cell {
+  padding: 9px 8px 9px 16px;
+}
+.tbl-wrap .mat-mdc-row:last-child .mat-mdc-cell {
+  border-bottom: 0;
+}
+.strong {
+  font-weight: 500;
+  letter-spacing: 0.1px;
+}
+
+.eq-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #dcdcdd;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.eq-row > .grow {
+  flex: 1;
+  min-width: 0;
+}
+.eq-row b {
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  display: block;
+}
+.eq-icon {
+  width: 32px;
+  height: 32px;
+  color: #54545d;
+  flex: none;
+}
+
+.kv4 {
+  grid-template-columns: 150px 1fr 150px 1fr;
+}
+
+.cmt {
+  display: flex;
+  gap: 12px;
+}
+.cmt > .grow {
+  flex: 1;
+  min-width: 0;
+}
+.cmt + .cmt {
+  border-top: 1px solid #dcdcdd;
+  padding-top: 12px;
+}
+.add-comment {
+  margin-top: 12px;
+}
+.add-comment textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+.post-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.counter {
+  flex: 1;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  color: rgba(0, 0, 0, 0.6);
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .weather-row {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .kv4 {
+    grid-template-columns: 120px 1fr;
+  }
+}

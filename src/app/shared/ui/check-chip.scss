@@ -1,0 +1,70 @@
+button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px 0 12px;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--color-border-default);
+  background: #fff;
+  font:
+    500 14px/18px Roboto,
+    sans-serif;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+button:hover {
+  background: var(--color-action-outline-hover);
+}
+button:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+img {
+  display: block;
+  flex: none;
+}
+.grey {
+  color: #474752;
+}
+.grey.on {
+  background: #f7f7f7;
+  border-color: #474752;
+  color: #474752;
+}
+.olive {
+  color: var(--color-action-primary);
+}
+.olive.on {
+  background: var(--color-surface-selected);
+  border-color: var(--color-olive-700);
+  color: var(--color-olive-700);
+}
+.blue {
+  color: var(--color-data-12);
+}
+.blue.on {
+  background: rgba(46, 96, 170, 0.2);
+  border-color: #1e3f8a;
+  color: #1e3f8a;
+}
+.red {
+  color: var(--color-status-error-fg);
+}
+.red.on {
+  background: #fbedeb;
+  border-color: #8a1500;
+  color: #8a1500;
+}
+.green {
+  color: #2f7d52;
+}
+.green.on {
+  background: #e6f4ec;
+  border-color: #1e5a3a;
+  color: #1e5a3a;
+}
